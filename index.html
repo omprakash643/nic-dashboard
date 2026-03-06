@@ -10,14 +10,11 @@
 /* ─── RESET & BASE ──────────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:14px;}
-body{
-  background:#13100d;
-  color:#f0e8d8;
-  font-family:'Outfit',sans-serif;
-  min-height:100vh;
-  background-image:
-    radial-gradient(ellipse 70% 50% at 15% -5%,  #2a1f0a 0%,transparent 55%),
-    radial-gradient(ellipse 50% 40% at 85% 100%, #1a1408 0%,transparent 55%);
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  /* Removed dark gradients */
 }
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:#13100d;}
@@ -25,24 +22,18 @@ body{
 ::-webkit-scrollbar-thumb:hover{background:#c8973a;}
 
 /* ─── CSS VARIABLES ─────────────────────────────────────────────────── */
-:root{
-  --bg:       #13100d;
-  --surface:  #1a1510;
-  --card:     #1e1812;
-  --border:   #2e2518;
-  --border2:  #4a3d28;
-  --text:     #f0e8d8;
-  --sub:      #9e8c70;
-  --dim:      #4a3d28;
+:root {
+  --bg:       #fcf6e6; /* Light beige background */
+  --surface:  #f0e1bc; /* Gold/Tan surface */
+  --card:     #ffffff; /* White cards for pop */
+  --border:   #d4c4a8;
+  --text:     #332b1e; /* Dark brown text for readability */
+  --sub:      #6b5e4a;
+  /* Keep your chart colors bright */
   --gold:     #c8973a;
-  --gold-hi:  #e8b84b;
-  --gold-dim: #6b4f1a;
-  --cyan:     #4db8d4;
-  --green:    #5cba8a;
-  --violet:   #9b7fd4;
-  --rose:     #d4697a;
-  --orange:   #d4884a;
-  --amber:    #d4aa38;
+  --cyan:     #00aed9; 
+  --green:    #4CAF50;
+  --violet:   #8E44AD;
 }
 
 /* ─── TYPOGRAPHY ────────────────────────────────────────────────────── */
@@ -203,20 +194,13 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 
 /* ─── KPI CARDS ─────────────────────────────────────────────────────── */
 .kpi-row{display:flex;gap:12px;flex-wrap:wrap;}
-.kpi-card{
-  flex:1; min-width:155px;
-  background:linear-gradient(145deg,#222018 0%,#1a1610 50%,#161210 100%);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:20px 20px 16px;
-  position:relative; overflow:hidden;
-  cursor:default;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,.04) inset,
-    0 20px 40px rgba(0,0,0,.5),
-    0 4px 0 rgba(0,0,0,.4);
-  animation:fadeUp .5s ease both;
-  transition:transform .2s;
+.kpi-card {
+  background: var(--card); /* Bright white */
+  border: 3px solid var(--accent-color); /* Thicker colored borders */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.kpi-value {
+  color: #000000; /* Solid black for high contrast */
 }
 .kpi-card:hover{transform:translateY(-2px);}
 .kpi-card::before{
