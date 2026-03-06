@@ -1,13 +1,913 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>datastudio</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NICPL — Sales Intelligence Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ─── RESET & BASE ──────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;}
+body{
+  background:#13100d;
+  color:#f0e8d8;
+  font-family:'Outfit',sans-serif;
+  min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 15% -5%,  #2a1f0a 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 100%, #1a1408 0%,transparent 55%);
+}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:#13100d;}
+::-webkit-scrollbar-thumb{background:#4a3d28;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#c8973a;}
+
+/* ─── CSS VARIABLES ─────────────────────────────────────────────────── */
+:root{
+  --bg:       #13100d;
+  --surface:  #1a1510;
+  --card:     #1e1812;
+  --border:   #2e2518;
+  --border2:  #4a3d28;
+  --text:     #f0e8d8;
+  --sub:      #9e8c70;
+  --dim:      #4a3d28;
+  --gold:     #c8973a;
+  --gold-hi:  #e8b84b;
+  --gold-dim: #6b4f1a;
+  --cyan:     #4db8d4;
+  --green:    #5cba8a;
+  --violet:   #9b7fd4;
+  --rose:     #d4697a;
+  --orange:   #d4884a;
+  --amber:    #d4aa38;
+}
+
+/* ─── TYPOGRAPHY ────────────────────────────────────────────────────── */
+.serif{font-family:'Cormorant Garamond',serif;}
+
+/* ─── ANIMATIONS ────────────────────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes shimmer{0%,100%{opacity:.6;}50%{opacity:1;}}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.fade-up{animation:fadeUp .5s ease both;}
+.spin{animation:spin 1s linear infinite;display:inline-block;}
+
+/* ─── HEADER ────────────────────────────────────────────────────────── */
+header{
+  background:linear-gradient(180deg,#1e1a12 0%,#161208 100%);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+  height:64px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  position:sticky;
+  top:0;
+  z-index:200;
+  box-shadow:0 4px 32px rgba(0,0,0,.7), 0 1px 0 rgba(200,151,58,.15);
+}
+
+/* ─── LOGO AREA ─────────────────────────────────────────────────────── */
+/* 
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  HOW TO ADD YOUR LOGO:                                       ║
+  ║                                                              ║
+  ║  Option A — Image file (easiest):                            ║
+  ║  1. Upload your logo to the same folder as this HTML file    ║
+  ║  2. Name it: logo.png  (or logo.jpg, logo.svg)              ║
+  ║  3. Replace the SVG inside #logo-slot with:                  ║
+  ║     <img src="logo.png" alt="NICPL" style="height:46px;      ║
+  ║            width:46px; object-fit:contain; border-radius:8px;║
+  ║            background:#111;padding:2px;">                    ║
+  ║                                                              ║
+  ║  Option B — Hosted URL:                                      ║
+  ║  Replace the SVG with:                                       ║
+  ║  <img src="YOUR_LOGO_URL" style="height:46px;width:46px;     ║
+  ║         object-fit:contain;">                                ║
+  ╚══════════════════════════════════════════════════════════════╝
+*/
+#logo-slot{
+  width:46px; height:46px; flex-shrink:0;
+  border-radius:10px;
+  background:#111;
+  border:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+
+.brand-divider{
+  border-left:1px solid var(--border);
+  padding-left:14px;
+}
+.brand-name{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:700; font-size:19px;
+  color:var(--text); letter-spacing:.04em; line-height:1;
+}
+.brand-sub{
+  font-size:9px; color:var(--gold); letter-spacing:.22em;
+  margin-top:3px; font-weight:600;
+}
+
+.spacer{flex:1;}
+
+/* Sync badge */
+#sync-badge{display:flex;align-items:center;gap:10px;font-size:11px;}
+#sync-text{color:var(--green);}
+.btn-refresh{
+  background:linear-gradient(135deg,rgba(200,151,58,.22),rgba(200,151,58,.08));
+  border:1px solid rgba(200,151,58,.5);
+  color:var(--gold); border-radius:8px;
+  padding:5px 16px; cursor:pointer; font-size:11px;
+  font-family:'Outfit',sans-serif; font-weight:600; letter-spacing:.08em;
+  transition:all .15s;
+}
+.btn-refresh:hover{background:rgba(200,151,58,.3);}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-left:8px;}
+.tab-btn{
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--sub); border-radius:9px;
+  padding:5px 16px; cursor:pointer;
+  font-size:11px; font-family:'Outfit',sans-serif; font-weight:600;
+  letter-spacing:.05em; transition:all .15s;
+}
+.tab-btn:hover{background:rgba(200,151,58,.12);}
+.tab-btn.active{
+  background:linear-gradient(135deg,rgba(200,151,58,.2),rgba(200,151,58,.06));
+  border-color:rgba(200,151,58,.6);
+  color:var(--gold);
+  box-shadow:0 0 12px rgba(200,151,58,.2);
+}
+
+/* ─── FILTER BAR ────────────────────────────────────────────────────── */
+#filter-bar{
+  background:linear-gradient(180deg,#181410,#131008);
+  border-bottom:1px solid var(--border);
+  padding:10px 24px;
+  display:flex; flex-direction:column; gap:8px;
+  box-shadow:0 2px 16px rgba(0,0,0,.5);
+}
+.filter-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.filter-label{
+  font-size:9px; color:var(--gold); font-weight:700;
+  letter-spacing:.2em; min-width:42px; font-family:'Outfit',sans-serif;
+}
+.pill{
+  padding:3px 12px; border-radius:20px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--sub); font-size:11px;
+  font-family:'Outfit',sans-serif; font-weight:500;
+  cursor:pointer; white-space:nowrap;
+  transition:all .12s; letter-spacing:.03em;
+}
+.pill:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(200,151,58,.2);}
+.pill.active-cyan{
+  border-color:rgba(77,184,212,.6); background:rgba(77,184,212,.15);
+  color:#4db8d4; box-shadow:0 2px 8px rgba(77,184,212,.25);
+}
+.pill.active-violet{
+  border-color:rgba(155,127,212,.6); background:rgba(155,127,212,.15);
+  color:#9b7fd4; box-shadow:0 2px 8px rgba(155,127,212,.25);
+}
+.pill.active-green{
+  border-color:rgba(92,186,138,.6); background:rgba(92,186,138,.15);
+  color:#5cba8a; box-shadow:0 2px 8px rgba(92,186,138,.25);
+}
+input[type="date"]{
+  background:#1a1510; border:1px solid var(--border); border-radius:8px;
+  color:var(--text); padding:5px 10px; font-size:11px;
+  font-family:'Outfit',sans-serif; outline:none; cursor:pointer;
+  color-scheme:dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator{
+  filter:invert(.6) sepia(1) saturate(3) hue-rotate(5deg); cursor:pointer;
+}
+.btn-reset{
+  padding:3px 12px; border-radius:20px;
+  border:1px solid rgba(212,105,122,.5);
+  background:rgba(212,105,122,.1); color:var(--rose);
+  font-size:11px; cursor:pointer;
+  font-family:'Outfit',sans-serif; font-weight:600;
+  margin-left:8px;
+}
+
+/* ─── MAIN CONTENT ──────────────────────────────────────────────────── */
+#main{padding:20px 24px;display:flex;flex-direction:column;gap:18px;}
+
+/* ─── KPI CARDS ─────────────────────────────────────────────────────── */
+.kpi-row{display:flex;gap:12px;flex-wrap:wrap;}
+.kpi-card{
+  flex:1; min-width:155px;
+  background:linear-gradient(145deg,#222018 0%,#1a1610 50%,#161210 100%);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px 20px 16px;
+  position:relative; overflow:hidden;
+  cursor:default;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.04) inset,
+    0 20px 40px rgba(0,0,0,.5),
+    0 4px 0 rgba(0,0,0,.4);
+  animation:fadeUp .5s ease both;
+  transition:transform .2s;
+}
+.kpi-card:hover{transform:translateY(-2px);}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--accent-color,var(--gold));
+  opacity:.7;
+}
+.kpi-card::after{
+  content:'';position:absolute;top:0;right:0;width:80px;height:80px;
+  background:radial-gradient(circle at top right,rgba(var(--accent-rgb,.2),0.18),transparent 70%);
+  pointer-events:none;
+}
+.kpi-icon{
+  position:absolute;bottom:-4px;right:10px;
+  font-size:48px;opacity:.06;line-height:1;user-select:none;
+}
+.kpi-label{
+  font-size:9px;color:var(--sub);letter-spacing:.2em;
+  font-weight:600;text-transform:uppercase;margin-bottom:10px;
+}
+.kpi-value{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:700;line-height:1;margin-bottom:6px;
+  text-shadow:0 0 30px currentColor;
+  transition:filter .2s;
+}
+.kpi-card:hover .kpi-value{filter:brightness(1.2);}
+.kpi-sub{font-size:10px;color:var(--sub);letter-spacing:.04em;}
+.kpi-bottom-line{
+  position:absolute;bottom:0;left:16px;right:16px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),0.3),transparent);
+}
+
+/* ─── CHARTS GRID ───────────────────────────────────────────────────── */
+.charts-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+.chart-card{
+  background:linear-gradient(160deg,#1e1c14 0%,#171410 60%,#131108 100%);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px 18px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.03) inset;
+  position:relative; overflow:hidden;
+}
+.chart-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#6b4f1a,#c8973a,#e8b84b,#c8973a,#6b4f1a,transparent);
+}
+.chart-title{
+  font-size:10px;font-weight:600;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.18em;
+  font-family:'Outfit',sans-serif;
+  margin-bottom:14px;margin-top:4px;
+  display:flex;align-items:center;gap:8px;
+}
+.chart-title-bar{
+  width:2px;height:12px;
+  background:linear-gradient(180deg,var(--gold-hi),rgba(200,151,58,.5));
+  border-radius:1px;display:inline-block;flex-shrink:0;
+}
+.chart-wrap{position:relative;height:200px;}
+
+/* ─── DATA TABLE ────────────────────────────────────────────────────── */
+.table-card{
+  background:linear-gradient(160deg,#1e1c14,#161410);
+  border:1px solid var(--border);
+  border-radius:14px; padding:18px;
+  display:flex; flex-direction:column; gap:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  position:relative; overflow:hidden;
+}
+.table-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.table-title{
+  font-size:10px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;font-family:'Outfit',sans-serif;
+  display:flex;align-items:center;gap:8px;
+}
+.table-title-bar{width:2px;height:14px;border-radius:1px;display:inline-block;}
+.table-count{color:var(--dim);font-weight:500;}
+.search-input{
+  background:#1a1510;border:1px solid var(--border);border-radius:8px;
+  color:var(--text);padding:6px 14px;font-size:11px;
+  font-family:'Outfit',sans-serif;outline:none;width:220px;margin-left:auto;
+}
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead tr{background:linear-gradient(180deg,#201e14,#181610);}
+th{
+  padding:10px 14px;text-align:left;font-weight:700;
+  border-bottom:1px solid var(--border);
+  font-family:'Outfit',sans-serif;font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
+  cursor:pointer;user-select:none;
+}
+th:hover{opacity:.8;}
+td{
+  padding:9px 14px;font-family:'Outfit',sans-serif;
+  letter-spacing:.02em;white-space:nowrap;
+  max-width:240px;overflow:hidden;text-overflow:ellipsis;
+  border-bottom:1px solid rgba(46,37,24,.3);
+}
+.trow:hover{background:rgba(200,151,58,.05)!important;}
+.pager{display:flex;gap:8px;justify-content:center;align-items:center;}
+.btn-page{
+  background:none;border:1px solid var(--border);color:var(--sub);
+  border-radius:8px;padding:4px 16px;cursor:pointer;font-size:11px;
+  font-family:'Outfit',sans-serif;font-weight:600;
+}
+.btn-page:disabled{opacity:.3;cursor:default;}
+.page-info{color:var(--gold);font-size:12px;font-family:'Cormorant Garamond',serif;font-weight:600;}
+
+/* ─── FOOTER ────────────────────────────────────────────────────────── */
+footer{
+  text-align:center;padding:16px 24px;
+  border-top:1px solid var(--border);
+  color:var(--dim);font-size:10px;letter-spacing:.12em;
+  font-family:'Outfit',sans-serif;
+}
+
+/* ─── TAB PANELS ────────────────────────────────────────────────────── */
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ─── RESPONSIVE ────────────────────────────────────────────────────── */
+@media(max-width:1100px){.charts-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr;}.kpi-card{min-width:140px;}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  HEADER                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<header>
+
+  <!-- 
+    ┌─────────────────────────────────────────────────────────────────┐
+    │  LOGO SLOT — Replace the SVG below with your image tag          │
+    │                                                                 │
+    │  If your logo file is named "logo.png" in same folder:          │
+    │  <img src="logo.png" alt="NICPL"                                │
+    │       style="height:46px;width:46px;object-fit:contain;         │
+    │              border-radius:8px;background:#111;padding:2px">    │
+    │                                                                 │
+    │  Or paste a full URL to your logo image here                    │
+    └─────────────────────────────────────────────────────────────────┘
+  -->
+  <div id="logo-slot">
+    <!-- REPLACE THIS SVG WITH YOUR LOGO -->
+    <svg width="42" height="42" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="16" fill="#111"/>
+      <ellipse cx="25" cy="20" rx="13" ry="7" fill="#5cb85c" transform="rotate(-40 25 20)"/>
+      <ellipse cx="21" cy="28" rx="4" ry="11" fill="#5cb85c" transform="rotate(-40 21 28)"/>
+      <ellipse cx="75" cy="20" rx="13" ry="7" fill="#f0a830" transform="rotate(40 75 20)"/>
+      <ellipse cx="79" cy="28" rx="4" ry="11" fill="#f0a830" transform="rotate(40 79 28)"/>
+      <ellipse cx="25" cy="80" rx="13" ry="7" fill="#e05080" transform="rotate(40 25 80)"/>
+      <ellipse cx="21" cy="72" rx="4" ry="11" fill="#e05080" transform="rotate(40 21 72)"/>
+      <ellipse cx="75" cy="80" rx="13" ry="7" fill="#30a8e0" transform="rotate(-40 75 80)"/>
+      <ellipse cx="79" cy="72" rx="4" ry="11" fill="#30a8e0" transform="rotate(-40 79 72)"/>
+      <circle cx="50" cy="50" r="20" fill="#d0d0d0"/>
+      <circle cx="50" cy="50" r="16" fill="#f0f0f0"/>
+      <text x="50" y="47" text-anchor="middle" font-size="9" font-weight="800" fill="#e05080" font-family="Arial">nic</text>
+      <text x="50" y="93" text-anchor="middle" font-size="10" font-weight="900" fill="white" font-family="Arial" letter-spacing="1">NICPL</text>
+    </svg>
+  </div>
+
+  <div class="brand-divider">
+    <div class="brand-name">North India Compressors</div>
+    <div class="brand-sub">SALES INTELLIGENCE DASHBOARD · JAN–FEB 2026</div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div id="sync-badge">
+    <span id="sync-text">⟳ Loading…</span>
+    <button class="btn-refresh" onclick="loadAllSheets()">↺ REFRESH</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('overview')" id="tab-overview">◈ Overview</button>
+    <button class="tab-btn" onclick="switchTab('leads')"    id="tab-leads">◎ Leads</button>
+    <button class="tab-btn" onclick="switchTab('sales')"    id="tab-sales">◆ Sales</button>
+    <button class="tab-btn" onclick="switchTab('visitors')" id="tab-visitors">◉ Visitors</button>
+    <button class="tab-btn" onclick="switchTab('activity')" id="tab-activity">≡ Activity Log</button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  FILTER BAR                                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div id="filter-bar">
+  <div class="filter-row">
+    <span class="filter-label">DATE</span>
+    <input type="date" id="dateFrom" onchange="applyFilters()"/>
+    <span style="color:var(--dim);font-size:12px;">→</span>
+    <input type="date" id="dateTo" onchange="applyFilters()"/>
+    <span id="date-range-label" style="font-size:10px;color:var(--sub);margin-left:6px;"></span>
+  </div>
+  <div class="filter-row" id="user-filter">
+    <span class="filter-label">USER</span>
+  </div>
+  <div class="filter-row" id="type-filter">
+    <span class="filter-label">TYPE</span>
+  </div>
+  <div class="filter-row" id="state-filter">
+    <span class="filter-label">STATE</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  MAIN CONTENT                                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div id="main">
+
+  <!-- KPIs -->
+  <div class="kpi-row" id="kpi-row">
+    <div class="kpi-card fade-up" style="--accent-color:#4db8d4;--accent-rgb:77,184,212;" data-delay="0">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-label">Total Visitors</div>
+      <div class="kpi-value" id="kpi-visitors" style="font-size:42px;color:#4db8d4;">—</div>
+      <div class="kpi-sub" id="kpi-visitors-sub">customer visits recorded</div>
+      <div class="kpi-bottom-line"></div>
+    </div>
+    <div class="kpi-card fade-up" style="--accent-color:#9b7fd4;--accent-rgb:155,127,212;" data-delay="70">
+      <div class="kpi-icon">🎯</div>
+      <div class="kpi-label">Total Leads</div>
+      <div class="kpi-value" id="kpi-leads" style="font-size:42px;color:#9b7fd4;">—</div>
+      <div class="kpi-sub" id="kpi-leads-sub">— hot leads</div>
+      <div class="kpi-bottom-line"></div>
+    </div>
+    <div class="kpi-card fade-up" style="--accent-color:#5cba8a;--accent-rgb:92,186,138;" data-delay="140">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-label">Total Sales</div>
+      <div class="kpi-value" id="kpi-sales" style="font-size:42px;color:#5cba8a;">—</div>
+      <div class="kpi-sub">orders confirmed</div>
+      <div class="kpi-bottom-line"></div>
+    </div>
+    <div class="kpi-card fade-up" style="--accent-color:#d4aa38;--accent-rgb:212,170,56;" data-delay="210">
+      <div class="kpi-icon">📄</div>
+      <div class="kpi-label">Quotations Sent</div>
+      <div class="kpi-value" id="kpi-quot" style="font-size:42px;color:#d4aa38;">—</div>
+      <div class="kpi-sub">Hot Lead + Quot. Send</div>
+      <div class="kpi-bottom-line"></div>
+    </div>
+    <div class="kpi-card fade-up" style="--accent-color:#c8973a;--accent-rgb:200,151,58;" data-delay="280">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value" id="kpi-rev" style="font-size:28px;color:#c8973a;">—</div>
+      <div class="kpi-sub" id="kpi-rev-sub">avg per sale</div>
+      <div class="kpi-bottom-line"></div>
+    </div>
+  </div>
+
+  <!-- ═══ OVERVIEW TAB ══════════════════════════════════════════════ -->
+  <div class="tab-panel active" id="panel-overview">
+    <div class="charts-grid">
+      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Lead Source — Count</div><div class="chart-wrap"><canvas id="ch-source"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Lead Pipeline</div><div class="chart-wrap"><canvas id="ch-pipeline"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>State Sales — Revenue</div><div class="chart-wrap"><canvas id="ch-state-rev"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>User Sales — Revenue</div><div class="chart-wrap"><canvas id="ch-user-rev"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>User Sales — Count</div><div class="chart-wrap"><canvas id="ch-user-cnt"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Lead Type Sales — Count</div><div class="chart-wrap"><canvas id="ch-type-cnt"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Competitors (Visit)</div><div class="chart-wrap"><canvas id="ch-comp"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Visitors by User</div><div class="chart-wrap"><canvas id="ch-vis-user"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>State Sales — Count</div><div class="chart-wrap"><canvas id="ch-state-cnt"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ OTHER TAB PANELS ══════════════════════════════════════════ -->
+  <div class="tab-panel" id="panel-leads">
+    <div class="table-card">
+      <div id="tbl-leads-top" class="table-header"></div>
+      <div class="table-wrap"><table id="tbl-leads"></table></div>
+      <div class="pager" id="pg-leads"></div>
+    </div>
+  </div>
+  <div class="tab-panel" id="panel-sales">
+    <div class="table-card">
+      <div id="tbl-sales-top" class="table-header"></div>
+      <div class="table-wrap"><table id="tbl-sales"></table></div>
+      <div class="pager" id="pg-sales"></div>
+    </div>
+  </div>
+  <div class="tab-panel" id="panel-visitors">
+    <div class="table-card">
+      <div id="tbl-visitors-top" class="table-header"></div>
+      <div class="table-wrap"><table id="tbl-visitors"></table></div>
+      <div class="pager" id="pg-visitors"></div>
+    </div>
+  </div>
+  <div class="tab-panel" id="panel-activity">
+    <div class="table-card">
+      <div id="tbl-activity-top" class="table-header"></div>
+      <div class="table-wrap"><table id="tbl-activity"></table></div>
+      <div class="pager" id="pg-activity"></div>
+    </div>
+  </div>
+
+</div>
+<footer>NORTH INDIA COMPRESSORS PVT LTD — SALES INTELLIGENCE PLATFORM © 2026</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  JAVASCRIPT                                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+/* ─── SHEET URLS ──────────────────────────────────────────────── */
+const SHEET_URLS = {
+  visitors: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=0&single=true&output=csv",
+  leads:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=2066525621&single=true&output=csv",
+  sales:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=23552387&single=true&output=csv",
+};
+
+const PALETTE = ["#4db8d4","#5cba8a","#c8973a","#d4697a","#9b7fd4","#d4884a","#4ab8a8","#d4b86a","#a0c46a","#8a8ad4"];
+const norm = v => String(v||"").trim().toUpperCase();
+function fmt(n){if(!n)return"₹0";if(n>=1e7)return`₹${(n/1e7).toFixed(2)} Cr`;if(n>=1e5)return`₹${(n/1e5).toFixed(1)} L`;if(n>=1e3)return`₹${(n/1e3).toFixed(0)}K`;return`₹${n}`;}
+function fmtDate(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return d;return dt.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});}
+function toISO(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return"";return dt.toISOString().slice(0,10);}
+
+/* ─── STATE ───────────────────────────────────────────────────── */
+let RAW = { visitors:[], leads:[], sales:[] };
+let selUser="All", selType="All", selState="All";
+let sortState = {};
+let searchState = {};
+let pageState = {};
+const PER = 20;
+const charts = {};
+
+/* ─── CSV PARSER ──────────────────────────────────────────────── */
+function parseCSV(text) {
+  const norm2 = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim();
+  if(!norm2) return [];
+  let i=0;
+  const results=[];
+  function parseField(){
+    if(norm2[i]==='"'){i++;let v="";while(i<norm2.length){if(norm2[i]==='"'){if(norm2[i+1]==='"'){v+='"';i+=2;}else{i++;break;}}else{v+=norm2[i++];}}return v.trim();}
+    let v="";while(i<norm2.length&&norm2[i]!==","&&norm2[i]!=="\n")v+=norm2[i++];return v.trim();
+  }
+  function parseRow(){const r=[];while(i<norm2.length&&norm2[i]!=="\n"){r.push(parseField());if(i<norm2.length&&norm2[i]===",")i++;}if(norm2[i]==="\n")i++;return r;}
+  const headers=parseRow().map(h=>h.trim());
+  if(!headers.length)return[];
+  while(i<norm2.length){const vals=parseRow();if(vals.every(v=>v===""))continue;const obj={};headers.forEach((h,idx)=>{obj[h]=vals[idx]??""});results.push(obj);}
+  return results;
+}
+
+/* ─── TRANSFORMS ──────────────────────────────────────────────── */
+function transformV(rows){
+  return rows.map(r=>({
+    date:r["Date"]?.trim()||"", leadType:norm(r["Lead Type"]), user:norm(r["User"]),
+    customer:r["Customer Name"]?.trim()||"", contact:r["Contact Person"]?.trim()||"",
+    state:norm(r["State"]), city:r["City"]?.trim()||r["CIty"]?.trim()||"",
+    competitors:r["Competitors"]?.trim()||r["Mayer Existing Customer"]?.trim()||"",
+    remarks:r["Remark"]?.trim()||r["Remarks"]?.trim()||"",
+  })).filter(r=>r.date&&r.date!=="Date");
+}
+function transformL(rows){
+  return rows.map(r=>({
+    date:r["Date"]?.trim()||"", uqn:r["GST NO."]?.trim()||"",
+    source:r["Source"]?.trim()||"", user:norm(r["User"]),
+    customer:r["Customer Name"]?.trim()||"", contact:r["Contact Person"]?.trim()||"",
+    mobile:r["Mobile"]?.trim()||"", remarks:r["Remark"]?.trim()||r["Remarks"]?.trim()||"",
+    state:norm(r["State"]), leadType:norm(r["Lead Type"]),
+    stage:r["Stage"]?.trim()||"",
+  })).filter(r=>r.date&&r.date!=="Date");
+}
+function transformS(rows){
+  return rows.map(r=>({
+    date:r["Date"]?.trim()||"", customer:r["Customer"]?.trim()||"",
+    user:norm(r["User"]), leadType:norm(r["Lead Type"]),
+    amount:parseFloat(String(r["PO Amount"]||r["Amount"]||"0").replace(/[₹,\s]/g,""))||0,
+    state:norm(r["State"]), products:r["Products"]?.trim()||"",
+  })).filter(r=>r.date&&r.date!=="Date");
+}
+
+/* ─── FETCH ───────────────────────────────────────────────────── */
+async function fetchCSV(url){
+  const res = await fetch(url+"&cachebust="+Date.now(),{cache:"no-store"});
+  if(!res.ok) throw new Error("HTTP "+res.status);
+  return parseCSV(await res.text());
+}
+
+async function loadAllSheets(){
+  document.getElementById("sync-text").innerHTML='<span class="spin">⟳</span> SYNCING…';
+  document.getElementById("sync-text").style.color="var(--gold)";
+  try{
+    const [v,l,s] = await Promise.all([
+      fetchCSV(SHEET_URLS.visitors),
+      fetchCSV(SHEET_URLS.leads),
+      fetchCSV(SHEET_URLS.sales),
+    ]);
+    RAW.visitors = transformV(v);
+    RAW.leads    = transformL(l);
+    RAW.sales    = transformS(s);
+    buildMasterFilters();
+    applyFilters();
+    const t = new Date().toLocaleTimeString();
+    document.getElementById("sync-text").innerHTML="✓ LIVE · "+t;
+    document.getElementById("sync-text").style.color="var(--green)";
+  }catch(e){
+    document.getElementById("sync-text").innerHTML="⚠ "+e.message;
+    document.getElementById("sync-text").style.color="var(--rose)";
+    applyFilters();
+  }
+}
+
+/* ─── MASTER FILTERS ──────────────────────────────────────────── */
+function buildMasterFilters(){
+  const allData = [...RAW.visitors,...RAW.leads,...RAW.sales];
+  const users  = ["All",...new Set(allData.map(r=>r.user).filter(Boolean))].sort((a,b)=>a==="All"?-1:a.localeCompare(b));
+  const types  = ["All",...new Set(allData.map(r=>r.leadType).filter(Boolean))].sort((a,b)=>a==="All"?-1:a.localeCompare(b));
+  const states = ["All",...new Set(allData.map(r=>r.state).filter(Boolean))].sort((a,b)=>a==="All"?-1:a.localeCompare(b));
+
+  buildPills("user-filter","USER",users,"cyan",v=>{selUser=v;applyFilters();},()=>selUser);
+  buildPills("type-filter","TYPE",types,"violet",v=>{selType=v;applyFilters();},()=>selType,13);
+  buildPills("state-filter","STATE",states,"green",v=>{selState=v;applyFilters();},()=>selState,12);
+}
+
+function buildPills(containerId, label, values, colorClass, onClick, getCurrent, maxLen=99){
+  const container = document.getElementById(containerId);
+  container.innerHTML = `<span class="filter-label">${label}</span>`;
+  values.forEach(v=>{
+    const btn = document.createElement("button");
+    btn.className = "pill";
+    btn.dataset.value = v;
+    btn.dataset.colorClass = colorClass;
+    btn.textContent = v==="All"?"ALL":(v.length>maxLen?v.slice(0,maxLen)+"…":v);
+    btn.title = v;
+    btn.onclick = ()=>{
+      onClick(v);
+      container.querySelectorAll(".pill").forEach(p=>{
+        p.classList.remove("active-cyan","active-violet","active-green");
+        if(p.dataset.value===getCurrent()) p.classList.add("active-"+colorClass);
+      });
+    };
+    if(v===getCurrent()) btn.classList.add("active-"+colorClass);
+    container.appendChild(btn);
+  });
+  // Reset all button
+  const rst = document.createElement("button");
+  rst.className="btn-reset"; rst.textContent="✕";
+  rst.onclick=()=>{onClick("All");container.querySelectorAll(".pill").forEach(p=>{p.classList.remove("active-cyan","active-violet","active-green");if(p.dataset.value==="All")p.classList.add("active-"+colorClass);});};
+  container.appendChild(rst);
+}
+
+/* ─── FILTER + RENDER ─────────────────────────────────────────── */
+function applyFilters(){
+  const from = document.getElementById("dateFrom").value;
+  const to   = document.getElementById("dateTo").value;
+
+  // Update date label
+  const lbl = document.getElementById("date-range-label");
+  if(from||to) lbl.textContent = (from?fmtDate(from):"Start")+" → "+(to?fmtDate(to):"End");
+  else lbl.textContent="";
+
+  function inRange(d){
+    if(!from&&!to) return true;
+    const iso = toISO(d); if(!iso) return true;
+    if(from&&iso<from) return false;
+    if(to&&iso>to) return false;
+    return true;
+  }
+  function match(r){
+    return (selUser==="All"||r.user===selUser)&&
+           (selType==="All"||r.leadType===selType)&&
+           (selState==="All"||r.state===selState)&&
+           inRange(r.date);
+  }
+
+  const fV = RAW.visitors.filter(match);
+  const fL = RAW.leads.filter(match);
+  const fS = RAW.sales.filter(match);
+  const fA = [...fV.map(r=>({...r,_src:"Visit"})),...fL.map(r=>({...r,_src:"Lead"}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  updateKPIs(fV,fL,fS);
+  updateCharts(fV,fL,fS);
+  renderTable("leads",   fL, ["date","source","user","customer","contact","mobile","state","leadType","stage","remarks"], ["Date","Source","User","Customer Name","Contact","Mobile","State","Lead Type","Stage","Remarks"], "#9b7fd4");
+  renderTable("sales",   fS, ["date","customer","user","leadType","amount","state","products"], ["Date","Customer","User","Lead Type","PO Amount","State","Products"], "#5cba8a");
+  renderTable("visitors",fV, ["date","leadType","user","customer","contact","state","city","competitors","remarks"], ["Date","Lead Type","User","Customer Name","Contact","State","City","Competitor","Remarks"], "#4db8d4");
+  renderTable("activity",fA, ["date","_src","leadType","user","customer","contact","state","stage","remarks"], ["Date","Type","Lead Type","User","Customer Name","Contact","State","Stage","Remarks"], "#c8973a");
+}
+
+/* ─── KPIs ────────────────────────────────────────────────────── */
+function updateKPIs(fV,fL,fS){
+  const rev  = fS.reduce((s,r)=>s+(r.amount||0),0);
+  const quot = fL.filter(r=>r.stage==="Quotation Send"||r.stage==="Hot Lead").length;
+  const hot  = fL.filter(r=>r.stage==="Hot Lead").length;
+  document.getElementById("kpi-visitors").textContent = fV.length;
+  document.getElementById("kpi-visitors-sub").textContent = "customer visits recorded";
+  document.getElementById("kpi-leads").textContent = fL.length;
+  document.getElementById("kpi-leads-sub").textContent = hot+" hot leads";
+  document.getElementById("kpi-sales").textContent = fS.length;
+  document.getElementById("kpi-quot").textContent = quot;
+  document.getElementById("kpi-rev").textContent = fmt(rev);
+  document.getElementById("kpi-rev-sub").textContent = "avg "+fmt(rev/(fS.length||1))+"/sale";
+}
+
+/* ─── CHARTS ──────────────────────────────────────────────────── */
+const chartDefaults = {
+  font:{ family:"'Outfit',sans-serif" },
+  color:"#9e8c70",
+};
+Chart.defaults.font.family = "'Outfit',sans-serif";
+Chart.defaults.color = "#9e8c70";
+
+function grp(arr,key,top=10){const m={};arr.forEach(r=>{if(r[key])m[r[key]]=(m[r[key]]||0)+1;});return Object.entries(m).map(([k,v])=>({k,v})).sort((a,b)=>b.v-a.v).slice(0,top);}
+function grpAmt(arr,key,top=8){const m={};arr.forEach(r=>{if(r[key])m[r[key]]=(m[r[key]]||0)+(r.amount||0);});return Object.entries(m).map(([k,v])=>({k,v})).sort((a,b)=>b.v-a.v).slice(0,top);}
+
+const gridColor = "rgba(46,37,24,0.8)";
+const tooltipStyle = {
+  backgroundColor:"#1a1510",borderColor:"#2e2518",borderWidth:1,
+  titleColor:"#c8973a",bodyColor:"#f0e8d8",
+  titleFont:{weight:"bold",size:11},bodyFont:{size:11},
+  cornerRadius:8,displayColors:true,padding:10,
+};
+
+function makeBar(id,labels,data,colors,horizontal=false){
+  if(charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id).getContext("2d");
+  charts[id] = new Chart(ctx,{
+    type:"bar",
+    data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
+    options:{
+      indexAxis: horizontal?"y":"x",
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...tooltipStyle,callbacks:{label:ctx=>{const v=ctx.raw;return horizontal&&id.includes("rev")?" "+fmt(v):" "+v;}}}},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{color:"#9e8c70",font:{size:9},maxRotation:horizontal?0:35,callback:v=>horizontal&&id.includes("rev")?fmt(v).replace("₹",""):v}},
+        y:{grid:{color:horizontal?gridColor:"transparent"},ticks:{color:"#f0e8d8",font:{size:10}}},
+      }
+    }
+  });
+}
+
+function makePie(id,labels,data,colors){
+  if(charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id).getContext("2d");
+  charts[id] = new Chart(ctx,{
+    type:"doughnut",
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:6}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:"45%",
+      plugins:{
+        legend:{display:true,position:"right",labels:{color:"#9e8c70",font:{size:10},padding:8,boxWidth:10}},
+        tooltip:{...tooltipStyle},
+      }
+    }
+  });
+}
+
+function updateCharts(fV,fL,fS){
+  const src   = grp(fL,"source",8);
+  const stage = [
+    {k:"New",v:fL.filter(r=>r.stage==="New").length,c:"#4db8d4"},
+    {k:"Follow up",v:fL.filter(r=>r.stage==="Follow up").length,c:"#9b7fd4"},
+    {k:"Hot Lead",v:fL.filter(r=>r.stage==="Hot Lead").length,c:"#d4884a"},
+    {k:"Quot. Send",v:fL.filter(r=>r.stage==="Quotation Send").length,c:"#c8973a"},
+    {k:"Pending",v:fL.filter(r=>r.stage==="Pending").length,c:"#d4697a"},
+  ].filter(d=>d.v>0);
+  const stateRev = grpAmt(fS,"state");
+  const userRev  = grpAmt(fS,"user");
+  const userCnt  = grp(fS,"user");
+  const typeCnt  = grp(fS,"leadType");
+  const comp     = grp(fV,"competitors",8);
+  const visUser  = grp(fV,"user",8);
+  const stateCnt = grp(fS,"state");
+
+  makeBar("ch-source", src.map(d=>d.k), src.map(d=>d.v), PALETTE);
+  makePie("ch-pipeline", stage.map(d=>d.k), stage.map(d=>d.v), stage.map(d=>d.c));
+  makeBar("ch-state-rev", stateRev.map(d=>d.k), stateRev.map(d=>d.v), PALETTE, true);
+  makeBar("ch-user-rev",  userRev.map(d=>d.k),  userRev.map(d=>d.v),  PALETTE, true);
+  makeBar("ch-user-cnt",  userCnt.map(d=>d.k),  userCnt.map(d=>d.v),  PALETTE, true);
+  makeBar("ch-type-cnt",  typeCnt.map(d=>d.k),  typeCnt.map(d=>d.v),  PALETTE, true);
+  makeBar("ch-comp",      comp.map(d=>d.k),      comp.map(d=>d.v),     PALETTE);
+  makeBar("ch-vis-user",  visUser.map(d=>d.k),   visUser.map(d=>d.v),  PALETTE);
+  makeBar("ch-state-cnt", stateCnt.map(d=>d.k),  stateCnt.map(d=>d.v), PALETTE, true);
+}
+
+/* ─── TABLES ──────────────────────────────────────────────────── */
+function renderTable(name, rows, cols, headers, color){
+  if(!sortState[name]) sortState[name]={col:"date",dir:"desc"};
+  if(!searchState[name]) searchState[name]="";
+  if(!pageState[name]) pageState[name]=0;
+
+  // Sort
+  const sorted=[...rows].sort((a,b)=>{
+    let av=a[sortState[name].col]??"",bv=b[sortState[name].col]??"";
+    if(sortState[name].col==="date"){av=new Date(av);bv=new Date(bv);}
+    if(sortState[name].col==="amount"){av=Number(av);bv=Number(bv);}
+    if(av<bv)return sortState[name].dir==="asc"?-1:1;
+    if(av>bv)return sortState[name].dir==="asc"?1:-1;
+    return 0;
+  });
+
+  // Filter by search
+  const q=searchState[name].toLowerCase();
+  const filtered=q?sorted.filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(q))):sorted;
+  const pages=Math.ceil(filtered.length/PER);
+  const pg=Math.min(pageState[name],Math.max(0,pages-1));
+  pageState[name]=pg;
+  const paged=filtered.slice(pg*PER,(pg+1)*PER);
+
+  const STAGE_C={New:"#4db8d4","Hot Lead":"#d4884a","Quotation Send":"#c8973a","Follow up":"#9b7fd4","Pending":"#d4697a"};
+
+  // Header area
+  const topEl=document.getElementById("tbl-"+name+"-top");
+  topEl.innerHTML=`
+    <div class="table-title" style="color:${color}">
+      <span class="table-title-bar" style="background:${color}"></span>
+      ${name.charAt(0).toUpperCase()+name.slice(1)} Records
+      <span class="table-count">(${filtered.length})</span>
+    </div>
+    <input class="search-input" placeholder="🔍  Search…" value="${searchState[name]}"
+      oninput="searchState['${name}']=this.value;pageState['${name}']=0;renderTable('${name}',[...arguments[0]],${JSON.stringify(cols)},${JSON.stringify(headers)},'${color}')" />
+  `;
+  // Reattach search (simpler approach)
+  topEl.querySelector("input").oninput = function(){
+    searchState[name]=this.value; pageState[name]=0;
+    applyFilters();
+  };
+
+  // Build table HTML
+  const tbl=document.getElementById("tbl-"+name);
+  let html=`<thead><tr>`;
+  headers.forEach((h,i)=>{
+    const sc=sortState[name];
+    const arr=sc.col===cols[i]?(sc.dir==="asc"?"↑":"↓"):`<span style="opacity:.3">↕</span>`;
+    html+=`<th style="color:${color}" onclick="toggleSort('${name}','${cols[i]}',${JSON.stringify(rows)},${JSON.stringify(cols)},${JSON.stringify(headers)},'${color}')">${h} ${arr}</th>`;
+  });
+  html+=`</tr></thead><tbody>`;
+  paged.forEach((row,i)=>{
+    html+=`<tr class="trow" style="background:${i%2===0?"transparent":"rgba(255,255,255,0.01)"}">`;
+    cols.forEach(col=>{
+      let val=row[col]??"";
+      let style="color:var(--text)";
+      if(col==="date"){val=fmtDate(val);style="color:var(--sub);white-space:nowrap";}
+      else if(col==="amount"){val=fmt(val);style="color:#5cba8a;font-weight:600";}
+      else if(col==="stage"&&val){style=`color:${STAGE_C[val]||"var(--text)"};font-weight:600`;}
+      else if(col==="_src"){style=`color:${val==="Lead"?"#9b7fd4":"#4db8d4"};font-weight:600`;}
+      else if(col==="user"){style="color:var(--gold);font-weight:500";}
+      html+=`<td style="${style}" title="${String(val).replace(/"/g,"'")}">${val}</td>`;
+    });
+    html+=`</tr>`;
+  });
+  if(paged.length===0) html+=`<tr><td colspan="${cols.length}" style="padding:24px;text-align:center;color:var(--dim);letter-spacing:.1em">No records found</td></tr>`;
+  html+=`</tbody>`;
+  tbl.innerHTML=html;
+
+  // Pager
+  const pgEl=document.getElementById("pg-"+name);
+  pgEl.innerHTML="";
+  if(pages>1){
+    const prev=document.createElement("button");
+    prev.className="btn-page"; prev.textContent="← Prev"; prev.disabled=pg===0;
+    prev.onclick=()=>{pageState[name]=pg-1;applyFilters();};
+    const info=document.createElement("span");
+    info.className="page-info"; info.textContent=`Page ${pg+1} of ${pages}`;
+    const next=document.createElement("button");
+    next.className="btn-page"; next.textContent="Next →"; next.disabled=pg===pages-1;
+    next.onclick=()=>{pageState[name]=pg+1;applyFilters();};
+    pgEl.appendChild(prev); pgEl.appendChild(info); pgEl.appendChild(next);
+  }
+}
+
+function toggleSort(name,col,rows,cols,headers,color){
+  const sc=sortState[name];
+  if(sc.col===col) sc.dir=sc.dir==="asc"?"desc":"asc";
+  else{sc.col=col;sc.dir="desc";}
+  applyFilters();
+}
+
+/* ─── TAB SWITCHING ───────────────────────────────────────────── */
+function switchTab(name){
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("panel-"+name).classList.add("active");
+  document.getElementById("tab-"+name).classList.add("active");
+}
+
+/* ─── INIT ────────────────────────────────────────────────────── */
+// Stagger KPI card animations
+document.querySelectorAll(".kpi-card").forEach((c,i)=>{
+  c.style.animationDelay=(i*70)+"ms";
+});
+
+// Load data
+loadAllSheets();
+
+// Auto-refresh every 5 minutes
+setInterval(loadAllSheets, 300000);
+</script>
+</body>
 </html>
