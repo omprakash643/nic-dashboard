@@ -23,17 +23,16 @@ body {
 
 /* ─── CSS VARIABLES ─────────────────────────────────────────────────── */
 :root {
-  --bg:       #fcf6e6; /* Light beige background */
-  --surface:  #f0e1bc; /* Gold/Tan surface */
-  --card:     #ffffff; /* White cards for pop */
-  --border:   #d4c4a8;
-  --text:     #332b1e; /* Dark brown text for readability */
-  --sub:      #6b5e4a;
-  /* Keep your chart colors bright */
-  --gold:     #c8973a;
-  --cyan:     #00aed9; 
-  --green:    #4CAF50;
-  --violet:   #8E44AD;
+  --bg:       #f7f2e0; /* The light beige from your Power BI bg */
+  --surface:  #e6d5b0; /* Gold headers/filters */
+  --card:     #ffffff; /* Clean white cards */
+  --border:   #d1c4a1;
+  --text:     #2a261f; /* Dark text for readability */
+  --gold:     #b8860b;
+  --cyan:     #00aed9; /* Bright Power BI blue */
+  --green:    #48c78e; /* Bright Power BI green */
+  --violet:   #9b59b6;
+  --orange:   #f39c12;
 }
 
 /* ─── TYPOGRAPHY ────────────────────────────────────────────────────── */
@@ -503,7 +502,7 @@ const SHEET_URLS = {
   sales:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=23552387&single=true&output=csv",
 };
 
-const PALETTE = ["#4db8d4","#5cba8a","#c8973a","#d4697a","#9b7fd4","#d4884a","#4ab8a8","#d4b86a","#a0c46a","#8a8ad4"];
+const PALETTE = ["#00aed9", "#48c78e", "#f1b434", "#e84c3d", "#9b59b6", "#34495e"];
 const norm = v => String(v||"").trim().toUpperCase();
 function fmt(n){if(!n)return"₹0";if(n>=1e7)return`₹${(n/1e7).toFixed(2)} Cr`;if(n>=1e5)return`₹${(n/1e5).toFixed(1)} L`;if(n>=1e3)return`₹${(n/1e3).toFixed(0)}K`;return`₹${n}`;}
 function fmtDate(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return d;return dt.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});}
