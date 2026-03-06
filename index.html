@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>NICPL — Sales Intelligence Dashboard</title>
+<link rel="icon" type="image/jpeg" href="WhatsApp Image 2026-02-18 at 2.26.58 PM (1).jpeg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -241,11 +243,9 @@ footer{text-align:center;padding:16px 24px;border-top:1px solid var(--border);co
 
 <!-- HEADER -->
 <header>
- <div id="logo-slot">
-  <img src="WhatsApp Image 2026-02-18 at 2.26.58 PM (1).jpeg" 
-       alt="NICPL" 
-       style="height:44px;width:44px;object-fit:contain;border-radius:6px;">
-</div>
+  <div id="logo-slot">
+    <img src="WhatsApp Image 2026-02-18 at 2.26.58 PM (1).jpeg" alt="NICPL" style="height:44px;width:44px;object-fit:contain;border-radius:6px;">
+  </div>
   <div class="brand-divider">
     <div class="brand-name">North India Compressors</div>
     <div class="brand-sub">SALES INTELLIGENCE DASHBOARD · JAN–FEB 2026</div>
@@ -624,6 +624,7 @@ function updateKPIs(fV,fL,fS){
 /* ─── CHARTS ─── */
 Chart.defaults.font.family="'Outfit',sans-serif";
 Chart.defaults.color="#9e8c70";
+Chart.register(ChartDataLabels);
 const gridColor="rgba(0,0,0,0.05)";
 const tooltipStyle={backgroundColor:"#1a1510",borderColor:"#2e2518",borderWidth:1,titleColor:"#c8973a",bodyColor:"#f0e8d8",titleFont:{weight:"bold",size:11},bodyFont:{size:11},cornerRadius:8,displayColors:true,padding:10};
 
@@ -634,15 +635,38 @@ function makeBar(id,labels,data,colors,horizontal=false){
   if(charts[id])charts[id].destroy();
   const canvas=document.getElementById(id);if(!canvas)return;
   const ctx=canvas.getContext("2d");
+  const isRev=id.includes("rev");
   charts[id]=new Chart(ctx,{
     type:"bar",
     data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
     options:{
-      indexAxis:horizontal?"y":"x",responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{...tooltipStyle,callbacks:{label:c=>{const v=c.raw;return horizontal&&id.includes("rev")?" "+fmt(v):" "+v;}}}},
+      indexAxis:horizontal?"y":"x",
+      responsive:true,maintainAspectRatio:false,
+      layout:{padding:{right:horizontal?60:10,top:horizontal?4:20}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{...tooltipStyle,callbacks:{label:c=>isRev?" "+fmt(c.raw):" "+c.raw}},
+        datalabels:{
+          display:true,
+          color:"#374151",
+          font:{size:10,weight:"700",family:"'Outfit',sans-serif"},
+          anchor:horizontal?"end":"end",
+          align:horizontal?"right":"top",
+          offset:4,
+          formatter:(v)=>isRev?fmt(v):v,
+          clip:false,
+        }
+      },
       scales:{
-        x:{grid:{color:gridColor},ticks:{color:"#9e8c70",font:{size:9},maxRotation:horizontal?0:35,callback:v=>horizontal&&id.includes("rev")?fmt(v).replace("₹",""):v}},
-        y:{grid:{color:horizontal?gridColor:"transparent"},ticks:{color:"#374151",font:{size:10}}},
+        x:{
+          grid:{color:gridColor},
+          ticks:{color:"#9e8c70",font:{size:9},maxRotation:horizontal?0:35,
+            callback:v=>horizontal&&isRev?fmt(v).replace("₹",""):v},
+        },
+        y:{
+          grid:{color:horizontal?gridColor:"transparent"},
+          ticks:{color:"#374151",font:{size:10}},
+        },
       }
     }
   });
@@ -652,12 +676,24 @@ function makePie(id,labels,data,colors){
   if(charts[id])charts[id].destroy();
   const canvas=document.getElementById(id);if(!canvas)return;
   const ctx=canvas.getContext("2d");
+  const total=data.reduce((a,b)=>a+b,0);
   charts[id]=new Chart(ctx,{
     type:"doughnut",
-    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:6}]},
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:"#ffffff",hoverOffset:6}]},
     options:{
-      responsive:true,maintainAspectRatio:false,cutout:"45%",
-      plugins:{legend:{display:true,position:"right",labels:{color:"#9e8c70",font:{size:10},padding:8,boxWidth:10}},tooltip:{...tooltipStyle}}
+      responsive:true,maintainAspectRatio:false,cutout:"42%",
+      plugins:{
+        legend:{display:true,position:"right",labels:{color:"#374151",font:{size:10},padding:8,boxWidth:10}},
+        tooltip:{...tooltipStyle,callbacks:{label:c=>`${c.label}: ${c.raw} (${Math.round(c.raw/total*100)}%)`}},
+        datalabels:{
+          display:(ctx)=>ctx.dataset.data[ctx.dataIndex]>0,
+          color:"#ffffff",
+          font:{size:11,weight:"700",family:"'Outfit',sans-serif"},
+          formatter:(v)=>v>0?v:"",
+          textShadowBlur:4,
+          textShadowColor:"rgba(0,0,0,0.4)",
+        }
+      }
     }
   });
 }
