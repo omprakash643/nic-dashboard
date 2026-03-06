@@ -227,6 +227,11 @@ td{
 .btn-page:disabled{opacity:.3;cursor:default;}
 .page-info{color:var(--gold);font-size:12px;font-family:'Cormorant Garamond',serif;font-weight:600;}
 
+.pill.active-date{border-color:#c8973a;background:#fff3cd;color:#92610a;font-weight:700;}
+.pill.active-qr{border-color:#c8973a;background:rgba(200,151,58,.18);color:#b8860b;font-weight:700;}
+#date-pills-row{padding:4px 0;}
+#date-pills-container .pill{font-size:10px;padding:3px 10px;border-radius:5px;}
+
 /* TAB PANELS */
 .tab-panel{display:none;}
 .tab-panel.active{display:flex;flex-direction:column;gap:24px;}
@@ -266,13 +271,32 @@ footer{text-align:center;padding:16px 24px;border-top:1px solid var(--border);co
 
 <!-- FILTER BAR -->
 <div id="filter-bar">
-  <div class="filter-row">
+  <div class="filter-row" style="flex-wrap:wrap;gap:6px;">
     <span class="filter-label">DATE</span>
-    <input type="date" id="dateFrom" onchange="applyFilters()"/>
+
+    <!-- Quick range buttons -->
+    <button class="pill" id="qr-all"    onclick="setQuickRange('all')"    title="All dates">ALL</button>
+    <button class="pill" id="qr-jan"    onclick="setQuickRange('jan')"    title="January 2026">JAN 2026</button>
+    <button class="pill" id="qr-feb"    onclick="setQuickRange('feb')"    title="February 2026">FEB 2026</button>
+    <button class="pill" id="qr-last7"  onclick="setQuickRange('last7')"  title="Last 7 days">LAST 7D</button>
+    <button class="pill" id="qr-last30" onclick="setQuickRange('last30')" title="Last 30 days">LAST 30D</button>
+
+    <span style="color:var(--dim);font-size:11px;margin:0 4px;">|</span>
+    <span style="font-size:10px;color:var(--sub);font-weight:600;">Custom:</span>
+    <input type="date" id="dateFrom" onchange="applyFilters();highlightQuickRange()"/>
     <span style="color:var(--dim);font-size:12px;">→</span>
-    <input type="date" id="dateTo" onchange="applyFilters()"/>
-    <span id="date-range-label" style="font-size:10px;color:var(--sub);margin-left:6px;"></span>
+    <input type="date" id="dateTo" onchange="applyFilters();highlightQuickRange()"/>
+    <button class="btn-reset" onclick="clearDates()" title="Clear date filter">✕</button>
+    <span id="date-range-label" style="font-size:10px;color:var(--sub);margin-left:4px;font-weight:600;"></span>
+    <span id="date-record-count" style="font-size:10px;color:var(--gold);margin-left:4px;font-weight:700;"></span>
   </div>
+
+  <!-- Date pills: one per unique date in data -->
+  <div class="filter-row" id="date-pills-row" style="flex-wrap:wrap;gap:4px;max-height:72px;overflow-y:auto;">
+    <span class="filter-label" style="min-width:50px;">DAYS</span>
+    <span id="date-pills-container" style="display:flex;flex-wrap:wrap;gap:4px;"></span>
+  </div>
+
   <div class="filter-row" id="user-filter">
     <span class="filter-label">USER</span>
   </div>
@@ -524,6 +548,112 @@ function buildMasterFilters(){
   buildPills("user-filter","USER",users,"cyan",v=>{selUser=v;applyFilters();},()=>selUser);
   buildPills("type-filter","TYPE",types,"violet",v=>{selType=v;applyFilters();},()=>selType,13);
   buildPills("state-filter","STATE",states,"green",v=>{selState=v;applyFilters();},()=>selState,12);
+  buildDatePills();
+}
+
+/* ─── DATE PILLS: one pill per unique date in the data ─── */
+function buildDatePills(){
+  const allData=[...RAW.visitors,...RAW.leads,...RAW.sales];
+  // Collect all unique ISO dates that exist in the data
+  const dateSet=new Set();
+  allData.forEach(r=>{const iso=toISO(r.date);if(iso)dateSet.add(iso);});
+  const dates=[...dateSet].sort();
+
+  const container=document.getElementById("date-pills-container");
+  container.innerHTML="";
+
+  dates.forEach(iso=>{
+    const d=new Date(iso);
+    const label=d.toLocaleDateString("en-IN",{day:"2-digit",month:"short"});
+    const btn=document.createElement("button");
+    btn.className="pill";
+    btn.dataset.iso=iso;
+    btn.textContent=label;
+    btn.title=fmtDate(iso);
+    btn.onclick=()=>selectSingleDate(iso);
+    container.appendChild(btn);
+  });
+
+  // Set min/max on the native date inputs to restrict to data range
+  if(dates.length){
+    document.getElementById("dateFrom").min=dates[0];
+    document.getElementById("dateFrom").max=dates[dates.length-1];
+    document.getElementById("dateTo").min=dates[0];
+    document.getElementById("dateTo").max=dates[dates.length-1];
+  }
+  highlightDatePills();
+}
+
+function selectSingleDate(iso){
+  document.getElementById("dateFrom").value=iso;
+  document.getElementById("dateTo").value=iso;
+  highlightQuickRange();
+  applyFilters();
+}
+
+function highlightDatePills(){
+  const from=document.getElementById("dateFrom").value;
+  const to=document.getElementById("dateTo").value;
+  document.querySelectorAll("#date-pills-container .pill").forEach(btn=>{
+    const iso=btn.dataset.iso;
+    const active=(!from&&!to)||(iso>=from&&iso<=to);
+    btn.classList.toggle("active-date",active);
+  });
+  // Update record count label
+  const allData=[...RAW.visitors,...RAW.leads,...RAW.sales];
+  const cnt=allData.filter(r=>{const iso=toISO(r.date);if(!iso)return false;if(from&&iso<from)return false;if(to&&iso>to)return false;return true;}).length;
+  document.getElementById("date-record-count").textContent=cnt?`(${cnt} records)`:"";
+}
+
+/* ─── QUICK RANGE BUTTONS ─── */
+function setQuickRange(range){
+  const allData=[...RAW.visitors,...RAW.leads,...RAW.sales];
+  const dates=[...new Set(allData.map(r=>toISO(r.date)).filter(Boolean))].sort();
+  const today=new Date();
+
+  let from="",to="";
+  if(range==="all"){from="";to="";}
+  else if(range==="jan"){from="2026-01-01";to="2026-01-31";}
+  else if(range==="feb"){from="2026-02-01";to="2026-02-28";}
+  else if(range==="last7"){
+    const d=new Date(today);d.setDate(d.getDate()-7);
+    from=d.toISOString().slice(0,10);
+    to=today.toISOString().slice(0,10);
+  }
+  else if(range==="last30"){
+    const d=new Date(today);d.setDate(d.getDate()-30);
+    from=d.toISOString().slice(0,10);
+    to=today.toISOString().slice(0,10);
+  }
+  document.getElementById("dateFrom").value=from;
+  document.getElementById("dateTo").value=to;
+  highlightQuickRange();
+  applyFilters();
+}
+
+function highlightQuickRange(){
+  const from=document.getElementById("dateFrom").value;
+  const to=document.getElementById("dateTo").value;
+  const map={
+    "qr-all":  {f:"",t:""},
+    "qr-jan":  {f:"2026-01-01",t:"2026-01-31"},
+    "qr-feb":  {f:"2026-02-01",t:"2026-02-28"},
+  };
+  Object.entries(map).forEach(([id,{f,t}])=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.toggle("active-qr",from===f&&to===t);
+  });
+  // "all" = both empty
+  const allBtn=document.getElementById("qr-all");
+  if(allBtn)allBtn.classList.toggle("active-qr",!from&&!to);
+  highlightDatePills();
+}
+
+function clearDates(){
+  document.getElementById("dateFrom").value="";
+  document.getElementById("dateTo").value="";
+  highlightQuickRange();
+  applyFilters();
 }
 
 function buildPills(containerId,label,values,colorClass,onClick,getCurrent,maxLen=99){
@@ -555,8 +685,10 @@ function applyFilters(){
   const from=document.getElementById("dateFrom").value;
   const to=document.getElementById("dateTo").value;
   const lbl=document.getElementById("date-range-label");
-  if(from||to)lbl.textContent=(from?fmtDate(from):"Start")+" → "+(to?fmtDate(to):"End");
-  else lbl.textContent="";
+  if(from&&to&&from===to) lbl.textContent=fmtDate(from);
+  else if(from||to)lbl.textContent=(from?fmtDate(from):"Start")+" → "+(to?fmtDate(to):"End");
+  else lbl.textContent="All Dates";
+  highlightDatePills();
 
   function inRange(d){if(!from&&!to)return true;const iso=toISO(d);if(!iso)return true;if(from&&iso<from)return false;if(to&&iso>to)return false;return true;}
   function match(r){return(selUser==="All"||r.user===selUser)&&(selType==="All"||r.leadType===selType)&&(selState==="All"||r.state===selState)&&inRange(r.date);}
@@ -832,6 +964,7 @@ function switchTab(name){
 
 /* ─── INIT ─── */
 document.querySelectorAll(".kpi-card").forEach((c,i)=>{c.style.animationDelay=(i*70)+"ms";});
+highlightQuickRange();
 loadAllSheets();
 setInterval(loadAllSheets,300000);
 </script>
