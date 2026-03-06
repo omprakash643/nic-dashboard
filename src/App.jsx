@@ -1,576 +1,741 @@
 import { useState, useMemo, useCallback } from "react";
 import {
   BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
 } from "recharts";
 import { useSheetTab, transformVisitors, transformLeads, transformSales } from "./useSheetData";
 
-/* ── GOOGLE SHEETS URLS ─────────────────────────────────────────────────────── */
+/* ─── GOOGLE SHEETS URLS ──────────────────────────────────────────────── */
 const SHEET_URLS = {
   visitors: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=0&single=true&output=csv",
   leads:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=2066525621&single=true&output=csv",
   sales:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=23552387&single=true&output=csv",
 };
 
-/* ── THEME ──────────────────────────────────────────────────────────────────── */
+/* ─── DESIGN TOKENS ───────────────────────────────────────────────────── */
 const C = {
-  bg:"#060e1a", surface:"#0d1829", card:"#0d1829", cardHi:"#14223a",
-  border:"#1e3048", text:"#e8f0fe", sub:"#6b8cae", dim:"#3a5070",
-  gold:"#f0b429", cyan:"#00cfff", green:"#00e68a", violet:"#b57bff",
-  rose:"#ff5075", orange:"#ff8c42",
+  bg:        "#07090f",
+  surface:   "#0e1420",
+  card:      "#111827",
+  cardEdge:  "#1c2840",
+  border:    "#1f3050",
+  borderHi:  "#2e4a70",
+  text:      "#e2eaf8",
+  sub:       "#7a9ac0",
+  dim:       "#334d6b",
+  gold:      "#d4a435",
+  goldHi:    "#f0c060",
+  goldDim:   "#7a5c1a",
+  cyan:      "#38bdf8",
+  green:     "#22d67a",
+  violet:    "#a78bfa",
+  rose:      "#fb7185",
+  orange:    "#fb923c",
+  amber:     "#fbbf24",
 };
-const PALETTE = ["#00cfff","#00e68a","#f0b429","#ff5075","#b57bff","#ff8c42","#4dffdb","#ff6b9d","#a3e635","#fb923c"];
 
-/* ── STATIC FALLBACK DATA ───────────────────────────────────────────────────── */
+const PALETTE = ["#38bdf8","#22d67a","#d4a435","#fb7185","#a78bfa","#fb923c","#34d399","#f472b6","#a3e635","#60a5fa"];
+
+const STAGE_C = {
+  "New":            C.cyan,
+  "Follow up":      C.violet,
+  "Hot Lead":       C.orange,
+  "Quotation Send": C.gold,
+  "Pending":        C.rose,
+};
+
+/* ─── STATIC FALLBACK ─────────────────────────────────────────────────── */
 const STATIC_VISITORS = [
-  {date:"2026-01-12",leadType:"MCS+MRC",user:"ASHWIN GARG",customer:"sp pulses",contact:"tikam sharma",state:"RAJASTHAN",city:"ajmer",competitors:"No",remarks:"Sortex on moong mogar 10 chute"},
-  {date:"2026-01-27",leadType:"COLOR SORTER",user:"ASHWIN GARG",customer:"hem industries",contact:"rishabh",state:"RAJASTHAN",city:"Ajmer",competitors:"No",remarks:"Sortex on Moong mogar, Final price given"},
-  {date:"2026-01-23",leadType:"COLOR SORTER",user:"SHIVGATULLA",customer:"Chetak roller flour mill",contact:"Nitesh khokhar",state:"UTTAR PRADESH",city:"Basti",competitors:"Competitors",remarks:"Discussion for color sorter"},
-  {date:"2026-01-29",leadType:"KAESER AIR COMPRESSOR",user:"JAIPAL",customer:"SAI KIRPA STEEL INDUSTRY",contact:"RAKESH KUMAR JI",state:"DELHI",city:"BAWANA",competitors:"compititor",remarks:"REQUIR COMPRESSOR IN NEXT 6 MONTHS"},
-  {date:"2026-01-24",leadType:"COLOR SORTER",user:"RAHUL MAHANT",customer:"Vardhan industries",contact:"Aman jain",state:"MADHYA PRADESH",city:"Begamganj",competitors:"Milltech",remarks:"Plant shutdown due loss"},
-  {date:"2026-01-10",leadType:"KAESER AIR COMPRESSOR",user:"GOVIND",customer:"Shree shyam industry",contact:"Pardeep kasniya",state:"HARYANA",city:"Fathebad",competitors:"Competitor",remarks:"Meeting with MD"},
+  {date:"2026-01-12",leadType:"MCS+MRC",user:"ASHWIN GARG",customer:"SP Pulses",contact:"Tikam Sharma",state:"RAJASTHAN",city:"Ajmer",competitors:"No",remarks:"Sortex on moong mogar 10 chute"},
+  {date:"2026-01-27",leadType:"COLOR SORTER",user:"ASHWIN GARG",customer:"Hem Industries",contact:"Rishabh",state:"RAJASTHAN",city:"Ajmer",competitors:"No",remarks:"Final price given, customer at gulf expo"},
+  {date:"2026-01-23",leadType:"COLOR SORTER",user:"SHIVGATULLA",customer:"Chetak Roller Flour Mill",contact:"Nitesh Khokhar",state:"UTTAR PRADESH",city:"Basti",competitors:"Competitors",remarks:"Discussion for color sorter"},
+  {date:"2026-01-29",leadType:"KAESER AIR COMPRESSOR",user:"JAIPAL",customer:"Sai Kirpa Steel Industry",contact:"Rakesh Kumar",state:"DELHI",city:"Bawana",competitors:"Competitor",remarks:"Compressor required in next 6 months"},
+  {date:"2026-01-24",leadType:"COLOR SORTER",user:"RAHUL MAHANT",customer:"Vardhan Industries",contact:"Aman Jain",state:"MADHYA PRADESH",city:"Begamganj",competitors:"Milltech",remarks:"Plant shutdown due to loss"},
+  {date:"2026-01-10",leadType:"KAESER AIR COMPRESSOR",user:"GOVIND",customer:"Shree Shyam Industry",contact:"Pardeep Kasniya",state:"HARYANA",city:"Fathebad",competitors:"Competitor",remarks:"Meeting with MD"},
   {date:"2026-01-01",leadType:"MCS+MRC",user:"ASHWIN GARG",customer:"Agrawal Bandhu",contact:"Sahil Agrawal",state:"MADHYA PRADESH",city:"Indore",competitors:"No",remarks:"8 chute DLT on chana dal"},
-  {date:"2026-01-03",leadType:"COLOR SORTER",user:"SHIVGATULLA",customer:"Mahashakti foods pvt ltd",contact:"Aakash jalan",state:"UTTAR PRADESH",city:"Gorakhpur",competitors:"Competitors",remarks:"13 Chute color sorter enquiry"},
-  {date:"2026-01-15",leadType:"KAESER AIR COMPRESSOR",user:"HIMANSHU NAGAR",customer:"Shree balaji food industries",contact:"Kamlesh Gupta",state:"MADHYA PRADESH",city:"Bhind",competitors:"Construction",remarks:"Plan colour sorter next Year"},
-  {date:"2026-01-17",leadType:"KAESER AIR COMPRESSOR",user:"GOVIND",customer:"Lakhdatar international Pvt Ltd",contact:"Shivam goyal",state:"HARYANA",city:"Ghrounda",competitors:"Na",remarks:"Plant add, Requirement 2 month"},
+  {date:"2026-01-03",leadType:"COLOR SORTER",user:"SHIVGATULLA",customer:"Mahashakti Foods Pvt Ltd",contact:"Aakash Jalan",state:"UTTAR PRADESH",city:"Gorakhpur",competitors:"Competitors",remarks:"13 Chute color sorter enquiry"},
+  {date:"2026-01-15",leadType:"KAESER AIR COMPRESSOR",user:"HIMANSHU NAGAR",customer:"Shree Balaji Food Industries",contact:"Kamlesh Gupta",state:"MADHYA PRADESH",city:"Bhind",competitors:"Construction",remarks:"Plan colour sorter next Year"},
+  {date:"2026-01-17",leadType:"KAESER AIR COMPRESSOR",user:"GOVIND",customer:"Lakhdatar International Pvt Ltd",contact:"Shivam Goyal",state:"HARYANA",city:"Ghrounda",competitors:"Na",remarks:"Plant add, requirement in 2 months"},
 ];
 const STATIC_LEADS = [
-  {date:"2026-01-15",uqn:"KC/NICPL0G000/2026/2930",source:"By Meeting",user:"GOVIND",customer:"M/s JITENDRA COTTEX",contact:"Mr .Sachin jaglan",mobile:"+91-9112000063",remarks:"Need- 30hp Compressor",state:"HARYANA",leadType:"KAESER AIR COMPRESSOR",stage:"Quotation Send"},
-  {date:"2026-01-15",uqn:"M001/NICPL0S001/2026/2929",source:"Calling",user:"SHIVGATULLA",customer:"Sudipta hati",contact:"Sudipta hati",mobile:"8293916079",remarks:"Quotation send and he is finalized",state:"WEST BENGAL",leadType:"MCS+MRC",stage:"Quotation Send"},
-  {date:"2026-01-15",uqn:"CS/ERGYT/2026/2927",source:"Google Adwords",user:"SACHIN KUMAR 2",customer:"GDP AGRO AND FOOD PRODUCTS",contact:"Mr. Dharam Aggarwal Ji",mobile:"+91-9827259553",remarks:"Need Meyer Color Sorter for Peanuts",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Follow up"},
-  {date:"2026-01-14",uqn:"CS/MU/2026/2926",source:"By Meeting",user:"MURLI DAR SUKLA",customer:"JAY AMBEY PULSES",contact:"Sipoliya ji",mobile:"+91-7355020465",remarks:"he want 8 chute meyer color sorter",state:"UTTAR PRADESH",leadType:"COLOR SORTER",stage:"New"},
-  {date:"2026-01-13",uqn:"CS/NICUU001/2026/2920",source:"Calling",user:"UJJWAL UPADHYAY",customer:"Mr akash mittal",contact:"Mr akash mittal",mobile:"7415388948",remarks:"he told approximate price",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
-  {date:"2026-01-10",uqn:"CS/ERGYT/2026/2917",source:"Google Adwords",user:"SACHIN KUMAR 2",customer:"JAGDAMBA ENTERPRISES",contact:"Mr. Sunil Kumar Agarwal",mobile:"+91-9784088462",remarks:"Need Color Sorter For Groundnuts",state:"RAJASTHAN",leadType:"COLOR SORTER",stage:"Quotation Send"},
-  {date:"2026-01-29",uqn:"CS/DEMORM0002/2026/2976",source:"By Meeting",user:"RAHUL MAHANT",customer:"Vardhman dall milll",contact:"Rahul jain",mobile:"9893480631",remarks:"Planning 6 chute sortex with 30 hp compressor",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
-  {date:"2026-02-28",uqn:"CS/NICPLR001/2026/3064",source:"By Visit",user:"RAHUL VERMA",customer:"Palak traders",contact:"Aman Khandelwal",mobile:"+917000969542",remarks:"CS 6 chute requirement",state:"UTTAR PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
-  {date:"2026-02-13",uqn:"CS/NICUU001/2026/3008",source:"By Meeting",user:"UJJWAL UPADHYAY",customer:"Sujay Agro Industries",contact:"Manish Pamecha",mobile:"+91-9301705009",remarks:"sortex not finalized yet",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Quotation Send"},
-  {date:"2026-02-09",uqn:"CS/MU/2026/2994",source:"By Meeting",user:"MURLI DAR SUKLA",customer:"SS enterprises",contact:"KAMAL JAIN",mobile:"+91-9111234572",remarks:"finalize thinker model 8 chute",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
+  {date:"2026-01-15",uqn:"KC/NICPL0G000/2026/2930",source:"By Meeting",user:"GOVIND",customer:"M/s Jitendra Cottex",contact:"Sachin Jaglan",mobile:"+91-9112000063",remarks:"Need 30hp Compressor",state:"HARYANA",leadType:"KAESER AIR COMPRESSOR",stage:"Quotation Send"},
+  {date:"2026-01-15",uqn:"M001/2929",source:"Calling",user:"SHIVGATULLA",customer:"Sudipta Hati",contact:"Sudipta Hati",mobile:"8293916079",remarks:"Quotation send, finalized last week",state:"WEST BENGAL",leadType:"MCS+MRC",stage:"Quotation Send"},
+  {date:"2026-01-15",uqn:"CS/ERGYT/2026/2927",source:"Google Adwords",user:"SACHIN KUMAR 2",customer:"GDP Agro And Food Products Pvt Ltd",contact:"Dharam Aggarwal",mobile:"+91-9827259553",remarks:"Need Meyer Color Sorter for Peanuts",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Follow up"},
+  {date:"2026-01-14",uqn:"CS/MU/2026/2926",source:"By Meeting",user:"MURLI DAR SUKLA",customer:"Jay Ambey Pulses",contact:"Sipoliya Ji",mobile:"+91-7355020465",remarks:"Want 8 chute meyer color sorter",state:"UTTAR PRADESH",leadType:"COLOR SORTER",stage:"New"},
+  {date:"2026-01-13",uqn:"CS/NICUU001/2926/2920",source:"Calling",user:"UJJWAL UPADHYAY",customer:"Mr Akash Mittal",contact:"Akash Mittal",mobile:"7415388948",remarks:"Asked for approximate price",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
+  {date:"2026-01-10",uqn:"CS/ERGYT/2026/2917",source:"Google Adwords",user:"SACHIN KUMAR 2",customer:"Jagdamba Enterprises",contact:"Sunil Kumar Agarwal",mobile:"+91-9784088462",remarks:"Need Color Sorter for Groundnuts",state:"RAJASTHAN",leadType:"COLOR SORTER",stage:"Quotation Send"},
+  {date:"2026-01-29",uqn:"CS/DEMORM0002/2976",source:"By Meeting",user:"RAHUL MAHANT",customer:"Vardhman Dall Mill",contact:"Rahul Jain",mobile:"9893480631",remarks:"Planning 6 chute sortex with 30hp compressor",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
+  {date:"2026-02-28",uqn:"CS/NICPLR001/3064",source:"By Visit",user:"RAHUL VERMA",customer:"Palak Traders",contact:"Aman Khandelwal",mobile:"+917000969542",remarks:"CS 6 chute requirement, 15kw KC",state:"UTTAR PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
+  {date:"2026-02-13",uqn:"CS/NICUU001/3008",source:"By Meeting",user:"UJJWAL UPADHYAY",customer:"Sujay Agro Industries",contact:"Manish Pamecha",mobile:"+91-9301705009",remarks:"Sortex not finalized yet",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Quotation Send"},
+  {date:"2026-02-09",uqn:"CS/MU/2026/2994",source:"By Meeting",user:"MURLI DAR SUKLA",customer:"SS Enterprises",contact:"Kamal Jain",mobile:"+91-9111234572",remarks:"Will finalize thinker model 8 chute",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
 ];
 const STATIC_SALES = [
-  {date:"2026-01-01",customer:"HINDUSTHAN AGRI SEEDS PVT LTD",user:"MURLI DAR SUKLA",leadType:"MCS WITH KAESER COMPRESSOR",amount:3500000,state:"WEST BENGAL",products:"MCS",gst:""},
-  {date:"2026-01-01",customer:"Bankura agro processing Pvt.ltd",user:"MURLI DAR SUKLA",leadType:"MCS+MRC",amount:3751000,state:"WEST BENGAL",products:"MCS+MRC",gst:""},
-  {date:"2026-01-06",customer:"Shree Radha Laxmi Industries",user:"ARVIND KUMAR",leadType:"GRAIN DRYER",amount:6232594,state:"UTTAR PRADESH",products:"Grain Dryer",gst:""},
-  {date:"2026-01-06",customer:"Singhai & singhai",user:"RAHUL SIR",leadType:"COLOR SORTER",amount:5200000,state:"UTTAR PRADESH",products:"CS",gst:""},
-  {date:"2026-01-07",customer:"Prashant maheshwari",user:"RAHUL MAHANT",leadType:"MCS+MRC",amount:3121000,state:"MADHYA PRADESH",products:"MCS+MRC",gst:""},
-  {date:"2026-01-10",customer:"AGRAWAL BANDHU AGRO TECH PVT.LTD.",user:"MURLI DAR SUKLA",leadType:"COLOR SORTER",amount:3200000,state:"MADHYA PRADESH",products:"CS",gst:""},
-  {date:"2026-01-12",customer:"Dhirendra International pvt ltd",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:4500000,state:"MADHYA PRADESH",products:"CS",gst:""},
-  {date:"2026-01-12",customer:"RAJAT AGRO LLP",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:4100000,state:"GUJARAT",products:"CS",gst:""},
-  {date:"2026-01-14",customer:"Shree Balaji Export",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:3750000,state:"MADHYA PRADESH",products:"CS",gst:""},
-  {date:"2026-01-14",customer:"M.M PULSES",user:"MURLI DAR SUKLA",leadType:"AIR DRYER",amount:4550000,state:"MADHYA PRADESH",products:"Air Dryer",gst:""},
-  {date:"2026-01-15",customer:"Shree Giriraj Enterprises",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:2000000,state:"MADHYA PRADESH",products:"CS",gst:""},
-  {date:"2026-01-15",customer:"HOTWANI FOOD INGREDIENTS",user:"ASHWIN GARG",leadType:"MCS+MRC",amount:2470000,state:"MADHYA PRADESH",products:"MCS+MRC",gst:""},
-  {date:"2026-01-25",customer:"Prashant maheshwari",user:"RAHUL MAHANT",leadType:"MCS+MRC",amount:2800000,state:"MADHYA PRADESH",products:"MCS+MRC",gst:""},
-  {date:"2026-02-05",customer:"Anand Foods",user:"ARVIND KUMAR",leadType:"COLOR SORTER",amount:3900000,state:"UTTAR PRADESH",products:"CS",gst:""},
-  {date:"2026-02-13",customer:"Hem industries",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:4200000,state:"RAJASTHAN",products:"CS",gst:""},
+  {date:"2026-01-01",customer:"Hindusthan Agri Seeds Pvt Ltd",user:"MURLI DAR SUKLA",leadType:"MCS WITH KAESER COMPRESSOR",amount:3500000,state:"WEST BENGAL",products:"MCS"},
+  {date:"2026-01-01",customer:"Bankura Agro Processing Pvt Ltd",user:"MURLI DAR SUKLA",leadType:"MCS+MRC",amount:3751000,state:"WEST BENGAL",products:"MCS+MRC"},
+  {date:"2026-01-06",customer:"Shree Radha Laxmi Industries",user:"ARVIND KUMAR",leadType:"GRAIN DRYER",amount:6232594,state:"UTTAR PRADESH",products:"Grain Dryer"},
+  {date:"2026-01-06",customer:"Singhai & Singhai",user:"RAHUL SIR",leadType:"COLOR SORTER",amount:5200000,state:"UTTAR PRADESH",products:"CS"},
+  {date:"2026-01-07",customer:"Prashant Maheshwari",user:"RAHUL MAHANT",leadType:"MCS+MRC",amount:3121000,state:"MADHYA PRADESH",products:"MCS+MRC"},
+  {date:"2026-01-10",customer:"Agrawal Bandhu Agro Tech Pvt Ltd",user:"MURLI DAR SUKLA",leadType:"COLOR SORTER",amount:3200000,state:"MADHYA PRADESH",products:"CS"},
+  {date:"2026-01-12",customer:"Dhirendra International Pvt Ltd",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:4500000,state:"MADHYA PRADESH",products:"CS"},
+  {date:"2026-01-12",customer:"Rajat Agro LLP",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:4100000,state:"GUJARAT",products:"CS"},
+  {date:"2026-01-14",customer:"Shree Balaji Export",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:3750000,state:"MADHYA PRADESH",products:"CS"},
+  {date:"2026-01-14",customer:"M.M Pulses",user:"MURLI DAR SUKLA",leadType:"AIR DRYER",amount:4550000,state:"MADHYA PRADESH",products:"Air Dryer"},
+  {date:"2026-01-15",customer:"Shree Giriraj Enterprises",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:2000000,state:"MADHYA PRADESH",products:"CS"},
+  {date:"2026-01-15",customer:"Hotwani Food Ingredients Pvt Ltd",user:"ASHWIN GARG",leadType:"MCS+MRC",amount:2470000,state:"MADHYA PRADESH",products:"MCS+MRC"},
+  {date:"2026-01-25",customer:"Prashant Maheshwari",user:"RAHUL MAHANT",leadType:"MCS+MRC",amount:2800000,state:"MADHYA PRADESH",products:"MCS+MRC"},
+  {date:"2026-02-05",customer:"Anand Foods",user:"ARVIND KUMAR",leadType:"COLOR SORTER",amount:3900000,state:"UTTAR PRADESH",products:"CS"},
+  {date:"2026-02-13",customer:"Hem Industries",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:4200000,state:"RAJASTHAN",products:"CS"},
 ];
 
-/* ── HELPERS ────────────────────────────────────────────────────────────────── */
-// Same normalize function as useSheetData — TRIM + UPPERCASE for filter fields
+/* ─── HELPERS ─────────────────────────────────────────────────────────── */
 const norm = v => String(v || "").trim().toUpperCase();
 
 function fmt(n) {
   if (!n) return "₹0";
-  if (n >= 1e7) return `₹${(n/1e7).toFixed(2)} Cr`;
-  if (n >= 1e5) return `₹${(n/1e5).toFixed(1)} L`;
-  if (n >= 1e3) return `₹${(n/1e3).toFixed(0)}K`;
+  if (n >= 1e7) return `₹${(n / 1e7).toFixed(2)} Cr`;
+  if (n >= 1e5) return `₹${(n / 1e5).toFixed(1)} L`;
+  if (n >= 1e3) return `₹${(n / 1e3).toFixed(0)}K`;
   return `₹${n}`;
 }
 
-/* ── SMALL COMPONENTS ───────────────────────────────────────────────────────── */
-const FilterPill = ({ label, active, onClick, color = C.cyan }) => (
-  <button onClick={onClick} style={{
-    padding:"3px 12px", borderRadius:20, border:`1px solid ${active ? color : C.border}`,
-    background: active ? `${color}22` : "transparent", color: active ? color : C.sub,
-    fontSize:11, cursor:"pointer", fontFamily:"'IBM Plex Mono',monospace", fontWeight:600,
-    whiteSpace:"nowrap", transition:"all .15s",
-  }}>{label}</button>
-);
+function fmtDate(d) {
+  if (!d) return "";
+  const dt = new Date(d);
+  if (isNaN(dt)) return d;
+  return dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
 
-const KpiCard = ({ label, value, sub, color, icon }) => (
-  <div style={{
-    background:`linear-gradient(135deg,${C.card},${C.cardHi})`,
-    border:`1px solid ${color}44`, borderRadius:14, padding:"16px 18px",
-    flex:1, minWidth:130, position:"relative", overflow:"hidden",
-    boxShadow:`0 4px 24px ${color}18`,
-  }}>
-    <div style={{position:"absolute",top:-15,right:-15,fontSize:52,opacity:0.07}}>{icon}</div>
-    <div style={{fontSize:10,color:C.sub,textTransform:"uppercase",letterSpacing:"0.12em",
-      fontFamily:"'IBM Plex Mono',monospace",marginBottom:6}}>{label}</div>
-    <div style={{fontSize:28,fontWeight:800,color,fontFamily:"'Syne',sans-serif",lineHeight:1.1}}>{value}</div>
-    {sub && <div style={{fontSize:10,color:C.dim,marginTop:4,fontFamily:"'IBM Plex Mono',monospace"}}>{sub}</div>}
-  </div>
-);
+/* ─── GLOBAL STYLES injected once ────────────────────────────────────── */
+const GLOBAL_CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #07090f; }
+  ::-webkit-scrollbar-thumb { background: #2e4a70; border-radius: 3px; }
+  body { background: #07090f; }
 
-const SectionTitle = ({ children }) => (
-  <div style={{fontSize:11,fontWeight:700,color:C.gold,textTransform:"uppercase",
-    letterSpacing:"0.14em",fontFamily:"'IBM Plex Mono',monospace",marginBottom:10,
-    display:"flex",alignItems:"center",gap:8}}>
-    <span style={{width:3,height:14,background:C.gold,borderRadius:2,display:"inline-block"}}/>
-    {children}
-  </div>
-);
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .kpi-card {
+    animation: fadeIn 0.4s ease both;
+  }
+  .kpi-card:hover .kpi-value {
+    filter: brightness(1.3);
+  }
+  .row-hover:hover {
+    background: rgba(212,164,53,0.06) !important;
+  }
+  .pill-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212,164,53,0.25);
+  }
+  .tab-btn:hover {
+    background: rgba(212,164,53,0.15) !important;
+  }
+`;
 
-function ChartCard({ title, children, minH = 230 }) {
+/* ─── 3D KPI CARD ─────────────────────────────────────────────────────── */
+function KpiCard({ label, value, sub, color, icon, delay = 0 }) {
+  const isRev = label.toLowerCase().includes("revenue");
   return (
-    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:16,minHeight:minH}}>
-      <SectionTitle>{title}</SectionTitle>
+    <div className="kpi-card" style={{
+      animationDelay: `${delay}ms`,
+      flex: 1, minWidth: 150,
+      background: `linear-gradient(160deg, #151f35 0%, #0e1420 40%, #0a1018 100%)`,
+      border: `1px solid ${color}55`,
+      borderRadius: 16,
+      padding: "20px 20px 16px",
+      position: "relative",
+      overflow: "hidden",
+      cursor: "default",
+      boxShadow: `
+        0 1px 0 ${color}33 inset,
+        0 -1px 0 #00000080 inset,
+        4px 0 8px #00000060,
+        0 8px 32px ${color}18,
+        0 2px 0 #ffffff08 inset
+      `,
+    }}>
+      {/* top shine */}
+      <div style={{
+        position:"absolute", top:0, left:0, right:0, height:1,
+        background:`linear-gradient(90deg, transparent, ${color}66, transparent)`,
+      }}/>
+      {/* corner accent */}
+      <div style={{
+        position:"absolute", top:0, right:0,
+        width:60, height:60,
+        background:`radial-gradient(circle at top right, ${color}22, transparent 70%)`,
+      }}/>
+      {/* icon watermark */}
+      <div style={{
+        position:"absolute", bottom:-8, right:8,
+        fontSize:52, opacity:0.06, lineHeight:1, userSelect:"none",
+      }}>{icon}</div>
+
+      <div style={{
+        fontSize:9, color: C.sub, letterSpacing:"0.18em",
+        fontFamily:"'Rajdhani',sans-serif", fontWeight:600,
+        textTransform:"uppercase", marginBottom:8,
+      }}>{label}</div>
+
+      <div className="kpi-value" style={{
+        fontSize: isRev ? 24 : 38,
+        fontWeight: 700,
+        color,
+        fontFamily:"'Cinzel',serif",
+        lineHeight: 1,
+        marginBottom: 6,
+        textShadow: `0 0 20px ${color}55`,
+        transition: "filter 0.2s",
+      }}>{value}</div>
+
+      {sub && <div style={{
+        fontSize:10, color: C.dim,
+        fontFamily:"'Rajdhani',sans-serif",
+        letterSpacing:"0.05em",
+      }}>{sub}</div>}
+
+      {/* bottom divider */}
+      <div style={{
+        position:"absolute", bottom:0, left:16, right:16, height:1,
+        background:`linear-gradient(90deg, transparent, ${color}33, transparent)`,
+      }}/>
+    </div>
+  );
+}
+
+/* ─── CHART CARD ──────────────────────────────────────────────────────── */
+function ChartCard({ title, children, span = 1 }) {
+  return (
+    <div style={{
+      gridColumn: span > 1 ? `span ${span}` : undefined,
+      background: `linear-gradient(170deg, #131c2e 0%, #0d1420 60%, #0a1018 100%)`,
+      border: `1px solid ${C.border}`,
+      borderRadius: 14,
+      padding: "16px 18px",
+      boxShadow: `
+        0 1px 0 #ffffff08 inset,
+        0 -1px 0 #00000060 inset,
+        0 4px 24px #00000060
+      `,
+      position:"relative", overflow:"hidden",
+    }}>
+      {/* top accent line */}
+      <div style={{
+        position:"absolute", top:0, left:0, right:0, height:2,
+        background:`linear-gradient(90deg, transparent 0%, ${C.gold}88 30%, ${C.goldHi}cc 50%, ${C.gold}88 70%, transparent 100%)`,
+      }}/>
+      <div style={{
+        fontSize:10, fontWeight:700, color:C.gold,
+        textTransform:"uppercase", letterSpacing:"0.16em",
+        fontFamily:"'Rajdhani',sans-serif",
+        marginBottom:14, marginTop:4,
+        display:"flex", alignItems:"center", gap:8,
+      }}>
+        <span style={{width:3,height:12,background:`linear-gradient(180deg,${C.goldHi},${C.gold})`,borderRadius:2,display:"inline-block",boxShadow:`0 0 6px ${C.gold}88`}}/>
+        {title}
+      </div>
       {children}
     </div>
   );
 }
 
-const SyncBadge = ({ loading, error, lastUpdated, onRefresh }) => (
-  <div style={{display:"flex",alignItems:"center",gap:8,fontSize:10,fontFamily:"'IBM Plex Mono',monospace"}}>
-    {loading && <span style={{color:C.cyan}}>⟳ SYNCING…</span>}
-    {error   && <span style={{color:C.rose}}>⚠ Error</span>}
-    {!loading && !error && lastUpdated && (
-      <span style={{color:C.green}}>✓ LIVE · {lastUpdated.toLocaleTimeString()}</span>
-    )}
-    <button onClick={onRefresh} style={{
-      background:"none",border:`1px solid ${C.border}`,borderRadius:6,
-      color:C.sub,padding:"2px 8px",cursor:"pointer",fontSize:10,
-      fontFamily:"'IBM Plex Mono',monospace",
-    }}>↺ Refresh</button>
-  </div>
-);
+/* ─── FILTER PILL ─────────────────────────────────────────────────────── */
+function FilterPill({ label, active, onClick, color = C.gold }) {
+  return (
+    <button className="pill-btn" onClick={onClick} style={{
+      padding: "4px 14px",
+      borderRadius: 20,
+      border: `1px solid ${active ? color : C.border}`,
+      background: active
+        ? `linear-gradient(135deg, ${color}28, ${color}12)`
+        : "transparent",
+      color: active ? color : C.sub,
+      fontSize: 11,
+      cursor: "pointer",
+      fontFamily: "'Rajdhani',sans-serif",
+      fontWeight: 600,
+      whiteSpace: "nowrap",
+      transition: "all .15s",
+      letterSpacing: "0.04em",
+      boxShadow: active ? `0 0 10px ${color}30, 0 2px 4px #00000040` : "none",
+    }}>{label}</button>
+  );
+}
 
-/* ── MAIN DASHBOARD ─────────────────────────────────────────────────────────── */
+/* ─── TOOLTIP STYLE ───────────────────────────────────────────────────── */
+const ttp = {
+  contentStyle: {
+    background: "#0e1420", border: `1px solid ${C.border}`,
+    borderRadius: 8, color: C.text, fontSize: 11,
+    fontFamily: "'Rajdhani',sans-serif", letterSpacing:"0.03em",
+    boxShadow:"0 8px 24px #00000080",
+  },
+  labelStyle: { color: C.gold, fontWeight:700 },
+  cursor: { fill: "rgba(212,164,53,0.06)" },
+};
+
+/* ─── MAIN APP ────────────────────────────────────────────────────────── */
 export default function Dashboard() {
   const [selUser,   setSelUser]   = useState("All");
   const [selType,   setSelType]   = useState("All");
   const [selState,  setSelState]  = useState("All");
   const [activeTab, setActiveTab] = useState("overview");
 
-  /* ── Fetch live data ── */
+  /* live data */
   const { data: rawV, loading: lV, error: eV, lastUpdated: luV, refetch: rfV } = useSheetTab(SHEET_URLS.visitors);
   const { data: rawL, loading: lL, error: eL, lastUpdated: luL, refetch: rfL } = useSheetTab(SHEET_URLS.leads);
   const { data: rawS, loading: lS, error: eS, lastUpdated: luS, refetch: rfS } = useSheetTab(SHEET_URLS.sales);
 
-  const refetchAll = useCallback(() => { rfV(); rfL(); rfS(); }, [rfV, rfL, rfS]);
+  const refetchAll  = useCallback(() => { rfV(); rfL(); rfS(); }, [rfV, rfL, rfS]);
   const loading     = lV || lL || lS;
-  const error       = eV || eL || eS;
   const lastUpdated = luV || luL || luS;
 
-  /* ── Transform + fallback ── */
-  const VISITORS = useMemo(() =>
-    rawV.length > 0 ? transformVisitors(rawV) : STATIC_VISITORS,
-  [rawV]);
+  const VISITORS = useMemo(() => rawV.length > 0 ? transformVisitors(rawV) : STATIC_VISITORS, [rawV]);
+  const LEADS    = useMemo(() => rawL.length > 0 ? transformLeads(rawL)    : STATIC_LEADS,    [rawL]);
+  const SALES    = useMemo(() => rawS.length > 0 ? transformSales(rawS)    : STATIC_SALES,    [rawS]);
 
-  const LEADS = useMemo(() =>
-    rawL.length > 0 ? transformLeads(rawL) : STATIC_LEADS,
-  [rawL]);
+  /* combined activity log */
+  const ACTIVITY = useMemo(() => [
+    ...VISITORS.map(r => ({ ...r, _src: "Visit" })),
+    ...LEADS.map(r => ({ ...r, _src: "Lead" })),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date)), [VISITORS, LEADS]);
 
-  const SALES = useMemo(() =>
-    rawS.length > 0 ? transformSales(rawS) : STATIC_SALES,
-  [rawS]);
-
-  /* ── COMBINED ACTIVITY LOG (Visitors + Leads merged) — like Power BI ── */
-  const ACTIVITY = useMemo(() => {
-    const fromVisitors = VISITORS.map(r => ({ ...r, _src: "Visit" }));
-    const fromLeads    = LEADS.map(r => ({ ...r, _src: "Lead" }));
-    return [...fromVisitors, ...fromLeads].sort((a, b) =>
-      new Date(b.date) - new Date(a.date)
-    );
-  }, [VISITORS, LEADS]);
-
-  /* ── Dynamic Master lists (from actual data) ── */
+  /* dynamic master lists (like Power BI) */
   const masterUsers = useMemo(() => {
     const s = new Set();
-    ACTIVITY.forEach(r => r.user && s.add(r.user));
-    SALES.forEach(r => r.user && s.add(r.user));
+    [...VISITORS, ...LEADS, ...SALES].forEach(r => r.user && s.add(r.user));
     return ["All", ...Array.from(s).sort()];
-  }, [ACTIVITY, SALES]);
+  }, [VISITORS, LEADS, SALES]);
 
   const masterTypes = useMemo(() => {
     const s = new Set();
-    ACTIVITY.forEach(r => r.leadType && s.add(r.leadType));
-    SALES.forEach(r => r.leadType && s.add(r.leadType));
+    [...VISITORS, ...LEADS, ...SALES].forEach(r => r.leadType && s.add(r.leadType));
     return ["All", ...Array.from(s).sort()];
-  }, [ACTIVITY, SALES]);
+  }, [VISITORS, LEADS, SALES]);
 
   const masterStates = useMemo(() => {
     const s = new Set();
-    ACTIVITY.forEach(r => r.state && s.add(r.state));
-    SALES.forEach(r => r.state && s.add(r.state));
+    [...VISITORS, ...LEADS, ...SALES].forEach(r => r.state && s.add(r.state));
     return ["All", ...Array.from(s).sort()];
-  }, [ACTIVITY, SALES]);
+  }, [VISITORS, LEADS, SALES]);
 
-  /* ── Filters ── */
-  const filterRow = useCallback((row) =>
-    (selUser  === "All" || row.user     === selUser)  &&
-    (selType  === "All" || row.leadType === selType)  &&
-    (selState === "All" || row.state    === selState),
+  /* filter fn */
+  const filterRow = useCallback(r =>
+    (selUser  === "All" || r.user     === selUser)  &&
+    (selType  === "All" || r.leadType === selType)  &&
+    (selState === "All" || r.state    === selState),
   [selUser, selType, selState]);
 
-  const fVisitors = useMemo(() => VISITORS.filter(filterRow), [VISITORS, filterRow]);
-  const fLeads    = useMemo(() => LEADS.filter(filterRow),    [LEADS, filterRow]);
-  const fSales    = useMemo(() => SALES.filter(filterRow),    [SALES, filterRow]);
-  const fActivity = useMemo(() => ACTIVITY.filter(filterRow), [ACTIVITY, filterRow]);
+  const fV = useMemo(() => VISITORS.filter(filterRow), [VISITORS, filterRow]);
+  const fL = useMemo(() => LEADS.filter(filterRow),    [LEADS,    filterRow]);
+  const fS = useMemo(() => SALES.filter(filterRow),    [SALES,    filterRow]);
+  const fA = useMemo(() => ACTIVITY.filter(filterRow), [ACTIVITY, filterRow]);
 
-  /* ── KPI calculations ── */
-  const totalRevenue = useMemo(() => fSales.reduce((s, r) => s + (r.amount || 0), 0), [fSales]);
+  /* KPIs */
+  const totalRev  = useMemo(() => fS.reduce((s, r) => s + (r.amount || 0), 0), [fS]);
+  const quotSent  = useMemo(() => fL.filter(r => r.stage === "Quotation Send" || r.stage === "Hot Lead").length, [fL]);
+  const hotLeads  = useMemo(() => fL.filter(r => r.stage === "Hot Lead").length, [fL]);
 
-  // Quotation Sent = Hot Lead + Quotation Send (same as Power BI)
-  const quotSent = useMemo(() =>
-    fLeads.filter(r => r.stage === "Quotation Send" || r.stage === "Hot Lead").length,
-  [fLeads]);
-
-  const hotLeads = useMemo(() => fLeads.filter(r => r.stage === "Hot Lead").length, [fLeads]);
-
-  /* ── Chart data ── */
+  /* charts */
   const sourceData = useMemo(() => {
     const m = {};
-    fLeads.forEach(r => { if (r.source) m[r.source] = (m[r.source] || 0) + 1; });
-    return Object.entries(m).map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value).slice(0, 10);
-  }, [fLeads]);
+    fL.forEach(r => { if (r.source) m[r.source] = (m[r.source] || 0) + 1; });
+    return Object.entries(m).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
+  }, [fL]);
 
   const stageData = useMemo(() => [
-    { name: "New",          value: fLeads.filter(r => r.stage === "New").length,              color: C.cyan   },
-    { name: "Follow up",    value: fLeads.filter(r => r.stage === "Follow up").length,        color: C.violet },
-    { name: "Hot Lead",     value: fLeads.filter(r => r.stage === "Hot Lead").length,         color: C.orange },
-    { name: "Quot. Send",   value: fLeads.filter(r => r.stage === "Quotation Send").length,   color: C.gold   },
-    { name: "Pending",      value: fLeads.filter(r => r.stage === "Pending").length,          color: C.rose   },
-  ].filter(d => d.value > 0), [fLeads]);
+    { name:"New",          value: fL.filter(r => r.stage === "New").length,            color: C.cyan },
+    { name:"Follow up",    value: fL.filter(r => r.stage === "Follow up").length,      color: C.violet },
+    { name:"Hot Lead",     value: fL.filter(r => r.stage === "Hot Lead").length,       color: C.orange },
+    { name:"Quot. Send",   value: fL.filter(r => r.stage === "Quotation Send").length, color: C.gold },
+    { name:"Pending",      value: fL.filter(r => r.stage === "Pending").length,        color: C.rose },
+  ].filter(d => d.value > 0), [fL]);
 
-  const userSalesData = useMemo(() => {
+  const userSalesRev = useMemo(() => {
     const m = {};
-    fSales.forEach(r => { if (r.user) m[r.user] = (m[r.user] || 0) + r.amount; });
-    return Object.entries(m).map(([n, v]) => ({ name: n.split(" ")[0], value: v }))
-      .sort((a, b) => b.value - a.value).slice(0, 8);
-  }, [fSales]);
+    fS.forEach(r => { if (r.user) m[r.user] = (m[r.user] || 0) + r.amount; });
+    return Object.entries(m).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
+  }, [fS]);
 
-  const typeSalesData = useMemo(() => {
+  const userSalesCnt = useMemo(() => {
     const m = {};
-    fSales.forEach(r => { if (r.leadType) m[r.leadType] = (m[r.leadType] || 0) + r.amount; });
-    return Object.entries(m).map(([n, v]) => ({
-      name: n.length > 13 ? n.slice(0, 13) + "…" : n, value: v
-    })).sort((a, b) => b.value - a.value);
-  }, [fSales]);
+    fS.forEach(r => { if (r.user) m[r.user] = (m[r.user] || 0) + 1; });
+    return Object.entries(m).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
+  }, [fS]);
 
-  const stateSalesData = useMemo(() => {
+  const typeSalesCnt = useMemo(() => {
     const m = {};
-    fSales.forEach(r => { if (r.state) m[r.state] = (m[r.state] || 0) + r.amount; });
-    return Object.entries(m).map(([n, v]) => ({ name: n, value: v }))
-      .sort((a, b) => b.value - a.value).slice(0, 8);
-  }, [fSales]);
+    fS.forEach(r => { if (r.leadType) m[r.leadType] = (m[r.leadType] || 0) + 1; });
+    return Object.entries(m).map(([n, v]) => ({ name: n.length > 14 ? n.slice(0, 14) + "…" : n, value: v }))
+      .sort((a, b) => b.value - a.value);
+  }, [fS]);
 
-  const userVisitorData = useMemo(() => {
+  const stateSalesRev = useMemo(() => {
     const m = {};
-    fVisitors.forEach(r => { if (r.user) m[r.user] = (m[r.user] || 0) + 1; });
-    return Object.entries(m).map(([n, v]) => ({ name: n.split(" ")[0], value: v }))
-      .sort((a, b) => b.value - a.value).slice(0, 8);
-  }, [fVisitors]);
+    fS.forEach(r => { if (r.state) m[r.state] = (m[r.state] || 0) + r.amount; });
+    return Object.entries(m).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
+  }, [fS]);
 
-  // User sales count (for User Sales bar chart like Power BI)
-  const userSalesCount = useMemo(() => {
-    const m = {};
-    fSales.forEach(r => { if (r.user) m[r.user] = (m[r.user] || 0) + 1; });
-    return Object.entries(m).map(([n, v]) => ({ name: n.split(" ")[0], value: v }))
-      .sort((a, b) => b.value - a.value).slice(0, 8);
-  }, [fSales]);
-
-  // Lead type sales count
-  const typeLeadCount = useMemo(() => {
-    const m = {};
-    fSales.forEach(r => { if (r.leadType) m[r.leadType] = (m[r.leadType] || 0) + 1; });
-    return Object.entries(m).map(([n, v]) => ({
-      name: n.length > 13 ? n.slice(0, 13) + "…" : n, value: v
-    })).sort((a, b) => b.value - a.value);
-  }, [fSales]);
-
-  // Competitors breakdown (Visitors)
   const competitorsData = useMemo(() => {
     const m = {};
-    fVisitors.forEach(r => {
-      const key = r.competitors || "Unknown";
-      m[key] = (m[key] || 0) + 1;
-    });
-    return Object.entries(m).map(([n, v]) => ({ name: n, value: v }))
-      .sort((a, b) => b.value - a.value).slice(0, 10);
-  }, [fVisitors]);
+    fV.forEach(r => { const k = r.competitors || "Unknown"; m[k] = (m[k] || 0) + 1; });
+    return Object.entries(m).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
+  }, [fV]);
 
-  const stateSalesCount = useMemo(() => {
+  const userVisitorCnt = useMemo(() => {
     const m = {};
-    fSales.forEach(r => { if (r.state) m[r.state] = (m[r.state] || 0) + 1; });
-    return Object.entries(m).map(([n, v]) => ({ name: n, value: v }))
-      .sort((a, b) => b.value - a.value).slice(0, 8);
-  }, [fSales]);
+    fV.forEach(r => { if (r.user) m[r.user] = (m[r.user] || 0) + 1; });
+    return Object.entries(m).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
+  }, [fV]);
 
-  const ttp = {
-    contentStyle: { background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, fontSize: 11, fontFamily: "'IBM Plex Mono',monospace" },
-    labelStyle: { color: C.sub },
-  };
+  const stateSalesCnt = useMemo(() => {
+    const m = {};
+    fS.forEach(r => { if (r.state) m[r.state] = (m[r.state] || 0) + 1; });
+    return Object.entries(m).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
+  }, [fS]);
+
+  const TABS = [
+    { id:"overview",  label:"Overview",     icon:"◈" },
+    { id:"leads",     label:"Leads",        icon:"◎" },
+    { id:"sales",     label:"Sales",        icon:"◆" },
+    { id:"visitors",  label:"Visitors",     icon:"◉" },
+    { id:"activity",  label:"Activity Log", icon:"≡" },
+  ];
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "'IBM Plex Mono',monospace",
-      backgroundImage: "radial-gradient(ellipse at 20% 0%,#0a2040 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,#0a1828 0%,transparent 60%)" }}>
+    <div style={{ minHeight:"100vh", background:C.bg, color:C.text,
+      fontFamily:"'Rajdhani',sans-serif",
+      backgroundImage:`
+        radial-gradient(ellipse 80% 40% at 20% -10%, #0d2040 0%, transparent 60%),
+        radial-gradient(ellipse 60% 30% at 80% 110%, #0c1a30 0%, transparent 60%)
+      `
+    }}>
+      <style>{GLOBAL_CSS}</style>
 
-      {/* ── HEADER ── */}
+      {/* ═══ HEADER ════════════════════════════════════════════════════ */}
       <header style={{
-        background: C.surface, borderBottom: `1px solid ${C.border}`,
-        padding: "0 24px", display: "flex", alignItems: "center", gap: 12, height: 60,
-        boxShadow: `0 2px 20px #00000044`, position: "sticky", top: 0, zIndex: 100,
+        background:`linear-gradient(180deg, #0e1828 0%, #0a1220 100%)`,
+        borderBottom:`1px solid ${C.border}`,
+        padding:"0 28px",
+        display:"flex", alignItems:"center", gap:14, height:64,
+        boxShadow:`0 4px 32px #00000080, 0 1px 0 ${C.gold}22`,
+        position:"sticky", top:0, zIndex:200,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{
-            width: 38, height: 38, borderRadius: 10,
-            background: `linear-gradient(135deg,${C.gold},${C.orange})`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 18, fontWeight: 900, color: "#000", fontFamily: "'Syne',sans-serif",
-          }}>N</div>
-          <div>
-            <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 16, color: C.text, lineHeight: 1 }}>
-              North India Compressors
-            </div>
-            <div style={{ fontSize: 10, color: C.gold, letterSpacing: "0.1em", marginTop: 2 }}>
-              SALES DASHBOARD · JAN–FEB 2026
-            </div>
+        {/* Logo */}
+        <div style={{
+          width:44, height:44, borderRadius:12, flexShrink:0,
+          background:`linear-gradient(135deg, ${C.gold} 0%, ${C.amber} 50%, ${C.orange} 100%)`,
+          display:"flex", alignItems:"center", justifyContent:"center",
+          fontSize:20, fontWeight:900, color:"#07090f",
+          fontFamily:"'Cinzel',serif",
+          boxShadow:`0 4px 16px ${C.gold}60, 0 1px 0 #ffffff40 inset`,
+        }}>N</div>
+
+        <div>
+          <div style={{ fontFamily:"'Cinzel',serif", fontWeight:700, fontSize:17, color:C.text, letterSpacing:"0.05em", lineHeight:1 }}>
+            North India Compressors
+          </div>
+          <div style={{ fontSize:10, color:C.gold, letterSpacing:"0.2em", marginTop:3, fontFamily:"'Rajdhani',sans-serif", fontWeight:600 }}>
+            SALES INTELLIGENCE · JAN–FEB 2026
           </div>
         </div>
-        <div style={{ flex: 1 }} />
-        <SyncBadge loading={loading} error={error} lastUpdated={lastUpdated} onRefresh={refetchAll} />
-        {[["overview", "Overview"], ["leads", "Leads"], ["sales", "Sales"], ["visitors", "Visitors"], ["activity", "Activity Log"]].map(([id, lbl]) => (
-          <button key={id} onClick={() => setActiveTab(id)} style={{
-            background: activeTab === id ? `${C.gold}22` : "none",
-            border: `1px solid ${activeTab === id ? C.gold : C.border}`,
-            color: activeTab === id ? C.gold : C.sub,
-            borderRadius: 8, padding: "5px 14px", cursor: "pointer",
-            fontSize: 11, fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600,
-            transition: "all .15s",
-          }}>{lbl}</button>
-        ))}
+
+        <div style={{ flex:1 }}/>
+
+        {/* Sync badge */}
+        <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:11, fontFamily:"'Rajdhani',sans-serif" }}>
+          {loading
+            ? <span style={{ color:C.cyan, animation:"pulseGlow 1s infinite" }}>⟳ SYNCING…</span>
+            : <span style={{ color:C.green }}>✓ LIVE · {lastUpdated?.toLocaleTimeString() || "—"}</span>
+          }
+          <button onClick={refetchAll} style={{
+            background:`linear-gradient(135deg,${C.gold}22,${C.gold}10)`,
+            border:`1px solid ${C.gold}66`, color:C.gold, borderRadius:8,
+            padding:"4px 14px", cursor:"pointer", fontSize:11,
+            fontFamily:"'Rajdhani',sans-serif", fontWeight:700, letterSpacing:"0.06em",
+            boxShadow:`0 2px 8px ${C.gold}20`,
+          }}>↺ REFRESH</button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display:"flex", gap:4 }}>
+          {TABS.map(({ id, label, icon }) => (
+            <button key={id} className="tab-btn" onClick={() => setActiveTab(id)} style={{
+              background: activeTab === id
+                ? `linear-gradient(135deg,${C.gold}28,${C.gold}10)`
+                : "transparent",
+              border: `1px solid ${activeTab === id ? C.gold : C.border}`,
+              color: activeTab === id ? C.gold : C.sub,
+              borderRadius: 9, padding:"5px 16px", cursor:"pointer",
+              fontSize:12, fontFamily:"'Rajdhani',sans-serif", fontWeight:700,
+              letterSpacing:"0.06em", transition:"all .15s",
+              boxShadow: activeTab === id ? `0 0 12px ${C.gold}30` : "none",
+            }}>{icon} {label}</button>
+          ))}
+        </div>
       </header>
 
-      {/* ── FILTERS (dynamic from real data) ── */}
-      <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "10px 24px",
-        display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
-        <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ fontSize: 10, color: C.gold, fontWeight: 700, letterSpacing: "0.1em", marginRight: 4 }}>USER</span>
-          {masterUsers.map(u => (
-            <FilterPill key={u} label={u === "All" ? "All" : u.split(" ")[0]} active={selUser === u} color={C.cyan} onClick={() => setSelUser(u)} />
-          ))}
-        </div>
-        <div style={{ width: 1, height: 24, background: C.border }} />
-        <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ fontSize: 10, color: C.gold, fontWeight: 700, letterSpacing: "0.1em", marginRight: 4 }}>TYPE</span>
-          {masterTypes.map(t => (
-            <FilterPill key={t} label={t === "All" ? "All" : t.length > 10 ? t.slice(0, 10) + "…" : t} active={selType === t} color={C.violet} onClick={() => setSelType(t)} />
-          ))}
-        </div>
-        <div style={{ width: 1, height: 24, background: C.border }} />
-        <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ fontSize: 10, color: C.gold, fontWeight: 700, letterSpacing: "0.1em", marginRight: 4 }}>STATE</span>
-          {masterStates.map(s => (
-            <FilterPill key={s} label={s === "All" ? "All" : s.length > 8 ? s.slice(0, 8) + "…" : s} active={selState === s} color={C.green} onClick={() => setSelState(s)} />
-          ))}
-        </div>
+      {/* ═══ FILTERS ═══════════════════════════════════════════════════ */}
+      <div style={{
+        background:`linear-gradient(180deg,#0d1626,#0a1018)`,
+        borderBottom:`1px solid ${C.border}`,
+        padding:"10px 28px",
+        display:"flex", gap:16, flexWrap:"wrap", alignItems:"center",
+        boxShadow:"0 2px 16px #00000060",
+      }}>
+        {[
+          { label:"USER",  list: masterUsers,  sel: selUser,  set: setSelUser,  color: C.cyan },
+          { label:"TYPE",  list: masterTypes,  sel: selType,  set: setSelType,  color: C.violet },
+          { label:"STATE", list: masterStates, sel: selState, set: setSelState, color: C.green },
+        ].map(({ label, list, sel, set, color }, gi) => (
+          <div key={gi} style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
+            <span style={{ fontSize:10, color:C.gold, fontWeight:700, letterSpacing:"0.15em", marginRight:2, fontFamily:"'Cinzel',serif" }}>
+              {label}
+            </span>
+            {/* Full name for USER, truncated just for TYPE/STATE if long */}
+            {list.map(v => (
+              <FilterPill
+                key={v}
+                label={v === "All" ? "ALL" : (label === "USER" ? v : (v.length > 12 ? v.slice(0, 12) + "…" : v))}
+                active={sel === v}
+                color={color}
+                onClick={() => set(v)}
+              />
+            ))}
+            {gi < 2 && <div style={{ width:1, height:22, background:C.border, marginLeft:4 }}/>}
+          </div>
+        ))}
         {(selUser !== "All" || selType !== "All" || selState !== "All") && (
           <button onClick={() => { setSelUser("All"); setSelType("All"); setSelState("All"); }} style={{
-            padding: "3px 12px", borderRadius: 20, border: `1px solid ${C.rose}`,
-            background: `${C.rose}18`, color: C.rose, fontSize: 11, cursor: "pointer",
-            fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600,
-          }}>✕ Reset All</button>
+            padding:"4px 14px", borderRadius:20,
+            border:`1px solid ${C.rose}88`,
+            background:`${C.rose}15`, color:C.rose,
+            fontSize:11, cursor:"pointer",
+            fontFamily:"'Rajdhani',sans-serif", fontWeight:700, letterSpacing:"0.06em",
+          }}>✕ RESET ALL</button>
         )}
       </div>
 
-      <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
+      <div style={{ padding:"22px 28px", display:"flex", flexDirection:"column", gap:20 }}>
 
-        {/* ── KPI CARDS ── */}
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <KpiCard label="Total Visitors"   value={fVisitors.length}   color={C.cyan}   icon="👥" sub="customer visits recorded" />
-          <KpiCard label="Total Leads"      value={fLeads.length}      color={C.violet} icon="🎯" sub={`${hotLeads} hot leads`} />
-          <KpiCard label="Total Sales"      value={fSales.length}      color={C.green}  icon="✅" sub="orders confirmed" />
-          <KpiCard label="Quotations Sent"  value={quotSent}           color={C.gold}   icon="📄" sub="Hot Lead + Quot. Send" />
-          <KpiCard label="Total Revenue"    value={fmt(totalRevenue)}  color={C.orange} icon="💰" sub={`avg ${fmt(totalRevenue / (fSales.length || 1))}/sale`} />
+        {/* ═══ KPI CARDS ═════════════════════════════════════════════ */}
+        <div style={{ display:"flex", gap:14, flexWrap:"wrap" }}>
+          <KpiCard label="Total Visitors"  value={fV.length}         color={C.cyan}   icon="👥" sub="customer visits"               delay={0}   />
+          <KpiCard label="Total Leads"     value={fL.length}         color={C.violet} icon="🎯" sub={`${hotLeads} hot leads`}        delay={60}  />
+          <KpiCard label="Total Sales"     value={fS.length}         color={C.green}  icon="✅" sub="orders confirmed"              delay={120} />
+          <KpiCard label="Quotations Sent" value={quotSent}          color={C.amber}  icon="📄" sub="Hot Lead + Quot. Send"         delay={180} />
+          <KpiCard label="Total Revenue"   value={fmt(totalRev)}     color={C.gold}   icon="💰" sub={`avg ${fmt(totalRev/(fS.length||1))}/sale`} delay={240} />
         </div>
 
-        {/* ── OVERVIEW TAB ── */}
+        {/* ═══ OVERVIEW TAB ══════════════════════════════════════════ */}
         {activeTab === "overview" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-            <ChartCard title="Lead Source (Count)">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={sourceData} margin={{ top: 4, right: 8, left: -20, bottom: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
-                  <XAxis dataKey="name" tick={{ fill: C.sub, fontSize: 9 }} angle={-35} textAnchor="end" interval={0} />
-                  <YAxis tick={{ fill: C.sub, fontSize: 9 }} />
-                  <Tooltip {...ttp} />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    {sourceData.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
+
+            <ChartCard title="Lead Source — Count">
+              <ResponsiveContainer width="100%" height={195}>
+                <BarChart data={sourceData} margin={{top:4,right:8,left:-20,bottom:44}}>
+                  <CartesianGrid strokeDasharray="2 4" stroke={C.border} vertical={false}/>
+                  <XAxis dataKey="name" tick={{fill:C.sub,fontSize:9,fontFamily:"Rajdhani"}} angle={-38} textAnchor="end" interval={0}/>
+                  <YAxis tick={{fill:C.sub,fontSize:9}}/>
+                  <Tooltip {...ttp}/>
+                  <Bar dataKey="value" radius={[5,5,0,0]}>
+                    {sourceData.map((_,i)=><Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
             <ChartCard title="Lead Pipeline">
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" height={195}>
                 <PieChart>
-                  <Pie data={stageData} dataKey="value" nameKey="name" cx="50%" cy="50%"
-                    outerRadius={80} innerRadius={35}
-                    label={({ name, value }) => `${name}: ${value}`} labelLine={false} stroke="none">
-                    {stageData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                  <Pie data={stageData} dataKey="value" nameKey="name"
+                    cx="50%" cy="50%" outerRadius={78} innerRadius={36}
+                    paddingAngle={3} stroke="none"
+                    label={({name,value})=>`${name}: ${value}`} labelLine={false}>
+                    {stageData.map((d,i)=><Cell key={i} fill={d.color}/>)}
                   </Pie>
-                  <Tooltip {...ttp} />
+                  <Tooltip {...ttp}/>
                 </PieChart>
               </ResponsiveContainer>
             </ChartCard>
 
-            <ChartCard title="Sales by State (Revenue)">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={stateSalesData} layout="vertical" margin={{ top: 4, right: 50, left: 75, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} horizontal={false} />
-                  <XAxis type="number" tick={{ fill: C.sub, fontSize: 9 }} tickFormatter={v => fmt(v).replace("₹", "")} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: C.text, fontSize: 10 }} width={72} />
-                  <Tooltip {...ttp} formatter={v => [fmt(v), "Revenue"]} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {stateSalesData.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+            <ChartCard title="State Sales — Revenue">
+              <ResponsiveContainer width="100%" height={195}>
+                <BarChart data={stateSalesRev} layout="vertical" margin={{top:4,right:50,left:85,bottom:4}}>
+                  <CartesianGrid strokeDasharray="2 4" stroke={C.border} horizontal={false}/>
+                  <XAxis type="number" tick={{fill:C.sub,fontSize:9}} tickFormatter={v=>fmt(v).replace("₹","")}/>
+                  <YAxis type="category" dataKey="name" tick={{fill:C.text,fontSize:10,fontFamily:"Rajdhani"}} width={82}/>
+                  <Tooltip {...ttp} formatter={v=>[fmt(v),"Revenue"]}/>
+                  <Bar dataKey="value" radius={[0,5,5,0]}>
+                    {stateSalesRev.map((_,i)=><Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
-            <ChartCard title="User Sales (Revenue)">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={userSalesData} layout="vertical" margin={{ top: 4, right: 50, left: 60, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} horizontal={false} />
-                  <XAxis type="number" tick={{ fill: C.sub, fontSize: 9 }} tickFormatter={v => fmt(v).replace("₹", "")} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: C.text, fontSize: 10 }} width={58} />
-                  <Tooltip {...ttp} formatter={v => [fmt(v), "Revenue"]} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {userSalesData.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+            <ChartCard title="User Sales — Revenue">
+              <ResponsiveContainer width="100%" height={195}>
+                <BarChart data={userSalesRev} layout="vertical" margin={{top:4,right:50,left:110,bottom:4}}>
+                  <CartesianGrid strokeDasharray="2 4" stroke={C.border} horizontal={false}/>
+                  <XAxis type="number" tick={{fill:C.sub,fontSize:9}} tickFormatter={v=>fmt(v).replace("₹","")}/>
+                  <YAxis type="category" dataKey="name" tick={{fill:C.text,fontSize:10,fontFamily:"Rajdhani"}} width={108}/>
+                  <Tooltip {...ttp} formatter={v=>[fmt(v),"Revenue"]}/>
+                  <Bar dataKey="value" radius={[0,5,5,0]}>
+                    {userSalesRev.map((_,i)=><Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
-            <ChartCard title="User Sales (Count)">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={userSalesCount} layout="vertical" margin={{ top: 4, right: 30, left: 60, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} horizontal={false} />
-                  <XAxis type="number" tick={{ fill: C.sub, fontSize: 9 }} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: C.text, fontSize: 10 }} width={58} />
-                  <Tooltip {...ttp} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]} label={{ position: "right", fill: C.sub, fontSize: 10 }}>
-                    {userSalesCount.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+            <ChartCard title="User Sales — Count">
+              <ResponsiveContainer width="100%" height={195}>
+                <BarChart data={userSalesCnt} layout="vertical" margin={{top:4,right:30,left:110,bottom:4}}>
+                  <CartesianGrid strokeDasharray="2 4" stroke={C.border} horizontal={false}/>
+                  <XAxis type="number" tick={{fill:C.sub,fontSize:9}}/>
+                  <YAxis type="category" dataKey="name" tick={{fill:C.text,fontSize:10,fontFamily:"Rajdhani"}} width={108}/>
+                  <Tooltip {...ttp}/>
+                  <Bar dataKey="value" radius={[0,5,5,0]}
+                    label={{position:"right",fill:C.sub,fontSize:11,fontFamily:"Rajdhani",fontWeight:600}}>
+                    {userSalesCnt.map((_,i)=><Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
-            <ChartCard title="Lead Type Sales (Count)">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={typeLeadCount} layout="vertical" margin={{ top: 4, right: 30, left: 85, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} horizontal={false} />
-                  <XAxis type="number" tick={{ fill: C.sub, fontSize: 9 }} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: C.text, fontSize: 10 }} width={82} />
-                  <Tooltip {...ttp} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]} label={{ position: "right", fill: C.sub, fontSize: 10 }}>
-                    {typeLeadCount.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+            <ChartCard title="Lead Type Sales — Count">
+              <ResponsiveContainer width="100%" height={195}>
+                <BarChart data={typeSalesCnt} layout="vertical" margin={{top:4,right:30,left:110,bottom:4}}>
+                  <CartesianGrid strokeDasharray="2 4" stroke={C.border} horizontal={false}/>
+                  <XAxis type="number" tick={{fill:C.sub,fontSize:9}}/>
+                  <YAxis type="category" dataKey="name" tick={{fill:C.text,fontSize:10,fontFamily:"Rajdhani"}} width={108}/>
+                  <Tooltip {...ttp}/>
+                  <Bar dataKey="value" radius={[0,5,5,0]}
+                    label={{position:"right",fill:C.sub,fontSize:11,fontFamily:"Rajdhani",fontWeight:600}}>
+                    {typeSalesCnt.map((_,i)=><Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
             <ChartCard title="Competitors (Visit)">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={competitorsData} margin={{ top: 4, right: 8, left: -20, bottom: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
-                  <XAxis dataKey="name" tick={{ fill: C.sub, fontSize: 9 }} angle={-35} textAnchor="end" interval={0} />
-                  <YAxis tick={{ fill: C.sub, fontSize: 9 }} />
-                  <Tooltip {...ttp} />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    {competitorsData.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+              <ResponsiveContainer width="100%" height={195}>
+                <BarChart data={competitorsData} margin={{top:4,right:8,left:-20,bottom:50}}>
+                  <CartesianGrid strokeDasharray="2 4" stroke={C.border} vertical={false}/>
+                  <XAxis dataKey="name" tick={{fill:C.sub,fontSize:9,fontFamily:"Rajdhani"}} angle={-38} textAnchor="end" interval={0}/>
+                  <YAxis tick={{fill:C.sub,fontSize:9}}/>
+                  <Tooltip {...ttp}/>
+                  <Bar dataKey="value" radius={[5,5,0,0]}>
+                    {competitorsData.map((_,i)=><Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
             <ChartCard title="Visitors by User">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={userVisitorData} margin={{ top: 4, right: 8, left: -20, bottom: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
-                  <XAxis dataKey="name" tick={{ fill: C.sub, fontSize: 10 }} angle={-30} textAnchor="end" interval={0} />
-                  <YAxis tick={{ fill: C.sub, fontSize: 9 }} />
-                  <Tooltip {...ttp} />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    {userVisitorData.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+              <ResponsiveContainer width="100%" height={195}>
+                <BarChart data={userVisitorCnt} margin={{top:4,right:8,left:-20,bottom:50}}>
+                  <CartesianGrid strokeDasharray="2 4" stroke={C.border} vertical={false}/>
+                  <XAxis dataKey="name" tick={{fill:C.sub,fontSize:9,fontFamily:"Rajdhani"}} angle={-38} textAnchor="end" interval={0}/>
+                  <YAxis tick={{fill:C.sub,fontSize:9}}/>
+                  <Tooltip {...ttp}/>
+                  <Bar dataKey="value" radius={[5,5,0,0]}>
+                    {userVisitorCnt.map((_,i)=><Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
-            <ChartCard title="State Sales (Count)">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={stateSalesCount} layout="vertical" margin={{ top: 4, right: 30, left: 75, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} horizontal={false} />
-                  <XAxis type="number" tick={{ fill: C.sub, fontSize: 9 }} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: C.text, fontSize: 10 }} width={72} />
-                  <Tooltip {...ttp} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]} label={{ position: "right", fill: C.sub, fontSize: 10 }}>
-                    {stateSalesCount.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+            <ChartCard title="State Sales — Count">
+              <ResponsiveContainer width="100%" height={195}>
+                <BarChart data={stateSalesCnt} layout="vertical" margin={{top:4,right:30,left:85,bottom:4}}>
+                  <CartesianGrid strokeDasharray="2 4" stroke={C.border} horizontal={false}/>
+                  <XAxis type="number" tick={{fill:C.sub,fontSize:9}}/>
+                  <YAxis type="category" dataKey="name" tick={{fill:C.text,fontSize:10,fontFamily:"Rajdhani"}} width={82}/>
+                  <Tooltip {...ttp}/>
+                  <Bar dataKey="value" radius={[0,5,5,0]}
+                    label={{position:"right",fill:C.sub,fontSize:11,fontFamily:"Rajdhani",fontWeight:600}}>
+                    {stateSalesCnt.map((_,i)=><Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
+
           </div>
         )}
 
-        {/* ── VISITORS TAB ── */}
-        {activeTab === "visitors" && (
-          <DataTab
-            rows={fVisitors}
-            cols={["date", "leadType", "user", "customer", "contact", "state", "city", "competitors", "remarks"]}
-            headers={["Date", "Lead Type", "User", "Customer", "Contact", "State", "City", "Competitor", "Remarks"]}
-            title="Visitor Records"
-            color={C.cyan}
-          />
-        )}
-
-        {/* ── LEADS TAB ── */}
+        {/* ═══ LEADS TAB ═════════════════════════════════════════════ */}
         {activeTab === "leads" && (
-          <DataTab
-            rows={fLeads}
-            cols={["date", "source", "user", "customer", "contact", "mobile", "state", "leadType", "stage", "remarks"]}
-            headers={["Date", "Source", "User", "Customer", "Contact", "Mobile", "State", "Lead Type", "Stage", "Remarks"]}
+          <DataTable
+            rows={fL}
+            cols={["date","source","user","customer","contact","mobile","state","leadType","stage","remarks"]}
+            headers={["Date","Source","User","Customer Name","Contact Person","Mobile","State","Lead Type","Stage","Remarks"]}
             title="Lead Records"
             color={C.violet}
             stageCol="stage"
+            fmtCol={{ date: fmtDate }}
           />
         )}
 
-        {/* ── SALES TAB ── */}
+        {/* ═══ SALES TAB ══════════════════════════════════════════════ */}
         {activeTab === "sales" && (
-          <DataTab
-            rows={fSales}
-            cols={["date", "customer", "user", "leadType", "amount", "state", "products"]}
-            headers={["Date", "Customer", "User", "Lead Type", "PO Amount", "State", "Products"]}
+          <DataTable
+            rows={fS}
+            cols={["date","customer","user","leadType","amount","state","products"]}
+            headers={["Date","Customer","User","Lead Type","PO Amount","State","Products"]}
             title="Sales Records"
             color={C.green}
             amountCol="amount"
+            fmtCol={{ date: fmtDate, amount: fmt }}
           />
         )}
 
-        {/* ── ACTIVITY LOG TAB (Combined Visitors + Leads) ── */}
+        {/* ═══ VISITORS TAB ════════════════════════════════════════════ */}
+        {activeTab === "visitors" && (
+          <DataTable
+            rows={fV}
+            cols={["date","leadType","user","customer","contact","state","city","competitors","remarks"]}
+            headers={["Date","Lead Type","User","Customer Name","Contact Person","State","City","Competitor","Remarks"]}
+            title="Visitor Records"
+            color={C.cyan}
+            fmtCol={{ date: fmtDate }}
+          />
+        )}
+
+        {/* ═══ ACTIVITY LOG TAB ════════════════════════════════════════ */}
         {activeTab === "activity" && (
-          <DataTab
-            rows={fActivity}
-            cols={["date", "_src", "leadType", "user", "customer", "contact", "state", "stage", "remarks"]}
-            headers={["Date", "Type", "Lead Type", "User", "Customer", "Contact", "State", "Stage", "Remarks"]}
-            title="Combined Activity Log"
+          <DataTable
+            rows={fA}
+            cols={["date","_src","leadType","user","customer","contact","state","stage","remarks"]}
+            headers={["Date","Type","Lead Type","User","Customer Name","Contact","State","Stage","Remarks"]}
+            title="Combined Activity Log (Visits + Leads)"
             color={C.gold}
             stageCol="stage"
             srcCol="_src"
+            fmtCol={{ date: fmtDate }}
           />
         )}
+
       </div>
     </div>
   );
 }
 
-/* ── DATA TABLE ─────────────────────────────────────────────────────────────── */
-function DataTab({ rows, cols, headers, title, color, stageCol, amountCol, srcCol }) {
+/* ─── DATA TABLE ──────────────────────────────────────────────────────── */
+function DataTable({ rows, cols, headers, title, color, stageCol, amountCol, srcCol, fmtCol = {} }) {
   const [search, setSearch] = useState("");
-  const [page, setPage]     = useState(0);
+  const [page,   setPage]   = useState(0);
   const PER = 20;
 
   const filtered = useMemo(() => {
@@ -582,74 +747,125 @@ function DataTab({ rows, cols, headers, title, color, stageCol, amountCol, srcCo
   const paged = filtered.slice(page * PER, (page + 1) * PER);
   const pages = Math.ceil(filtered.length / PER);
 
-  const STAGE_COLORS = {
-    "New": C.cyan, "Hot Lead": C.orange, "Quotation Send": C.gold,
-    "Follow up": C.violet, "Pending": C.rose,
+  const STAGE_C2 = {
+    "New":            "#38bdf8",
+    "Hot Lead":       "#fb923c",
+    "Quotation Send": "#d4a435",
+    "Follow up":      "#a78bfa",
+    "Pending":        "#fb7185",
   };
 
-  function cellColor(col, val) {
-    if (col === amountCol) return C.green;
-    if (col === stageCol)  return STAGE_COLORS[val] || C.text;
-    if (col === srcCol)    return val === "Lead" ? C.violet : C.cyan;
-    return C.text;
+  function cellStyle(col, val) {
+    if (col === amountCol) return { color:"#22d67a", fontWeight:700 };
+    if (col === stageCol)  return { color: STAGE_C2[val] || "#e2eaf8", fontWeight:600 };
+    if (col === srcCol)    return { color: val === "Lead" ? "#a78bfa" : "#38bdf8", fontWeight:600 };
+    if (col === "date")    return { color:"#7a9ac0", whiteSpace:"nowrap" };
+    if (col === "user")    return { color:"#d4a435", fontWeight:600 };
+    return {};
   }
 
   function cellVal(col, val) {
-    if (col === amountCol) return fmt(val);
+    if (fmtCol[col]) return fmtCol[col](val);
     return String(val ?? "");
   }
 
   return (
-    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <SectionTitle>{title} ({filtered.length})</SectionTitle>
-        <div style={{ flex: 1 }} />
-        <input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} placeholder="Search..."
-          style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.text,
-            padding: "6px 12px", fontSize: 11, fontFamily: "'IBM Plex Mono',monospace", outline: "none", width: 200 }} />
+    <div style={{
+      background:`linear-gradient(170deg,#111827,#0d1420)`,
+      border:`1px solid ${C.border}`, borderRadius:14,
+      padding:18, display:"flex", flexDirection:"column", gap:12,
+      boxShadow:"0 4px 24px #00000060",
+      position:"relative", overflow:"hidden",
+    }}>
+      {/* top accent */}
+      <div style={{
+        position:"absolute",top:0,left:0,right:0,height:2,
+        background:`linear-gradient(90deg,transparent,${color}99,${color},${color}99,transparent)`,
+      }}/>
+
+      <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+        <div style={{ fontSize:11, fontWeight:700, color, textTransform:"uppercase",
+          letterSpacing:"0.16em", fontFamily:"'Cinzel',serif", display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ width:3,height:14,background:`linear-gradient(180deg,${color},${color}88)`,borderRadius:2,display:"inline-block" }}/>
+          {title}
+          <span style={{ fontSize:11, color:C.dim, fontFamily:"'Rajdhani',sans-serif", fontWeight:600 }}>
+            ({filtered.length} records)
+          </span>
+        </div>
+        <div style={{ flex:1 }}/>
+        <input
+          value={search}
+          onChange={e => { setSearch(e.target.value); setPage(0); }}
+          placeholder="🔍 Search…"
+          style={{
+            background:`linear-gradient(135deg,#0e1420,#0a1018)`,
+            border:`1px solid ${C.border}`, borderRadius:8,
+            color:C.text, padding:"6px 14px", fontSize:12,
+            fontFamily:"'Rajdhani',sans-serif", outline:"none", width:220,
+            boxShadow:"0 2px 8px #00000040",
+          }}
+        />
       </div>
-      <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${C.border}` }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+
+      <div style={{ overflowX:"auto", borderRadius:10, border:`1px solid ${C.border}` }}>
+        <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
           <thead>
-            <tr style={{ background: C.surface }}>
+            <tr style={{ background:`linear-gradient(180deg,#151f35,#111827)` }}>
               {(headers || cols).map((h, i) => (
-                <th key={i} style={{ padding: "10px 12px", textAlign: "left", fontWeight: 700,
-                  borderBottom: `1px solid ${C.border}`, color: color,
-                  fontFamily: "'IBM Plex Mono',monospace", textTransform: "uppercase",
-                  fontSize: 9, letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
-                  {h}
-                </th>
+                <th key={i} style={{
+                  padding:"10px 14px", textAlign:"left", fontWeight:700,
+                  borderBottom:`1px solid ${C.border}`,
+                  color: color,
+                  fontFamily:"'Cinzel',serif",
+                  fontSize:9, letterSpacing:"0.12em", whiteSpace:"nowrap",
+                  textTransform:"uppercase",
+                }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {paged.map((row, i) => (
-              <tr key={i} style={{ borderBottom: `1px solid ${C.border}44`, transition: "background .1s" }}
-                onMouseEnter={e => e.currentTarget.style.background = C.cardHi}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <tr key={i} className="row-hover"
+                style={{ borderBottom:`1px solid ${C.border}33`, transition:"background .12s" }}>
                 {cols.map(col => (
-                  <td key={col} style={{ padding: "8px 12px", color: cellColor(col, row[col]),
-                    whiteSpace: "nowrap", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <td key={col} style={{
+                    padding:"9px 14px",
+                    fontFamily:"'Rajdhani',sans-serif",
+                    letterSpacing:"0.03em",
+                    whiteSpace:"nowrap", maxWidth:240,
+                    overflow:"hidden", textOverflow:"ellipsis",
+                    ...cellStyle(col, row[col]),
+                  }}>
                     {cellVal(col, row[col])}
                   </td>
                 ))}
               </tr>
             ))}
             {paged.length === 0 && (
-              <tr><td colSpan={cols.length} style={{ padding: 20, color: C.dim, textAlign: "center" }}>No records found</td></tr>
+              <tr><td colSpan={cols.length} style={{ padding:24, color:C.dim, textAlign:"center",
+                fontFamily:"'Rajdhani',sans-serif", fontSize:13, letterSpacing:"0.1em" }}>
+                NO RECORDS FOUND
+              </td></tr>
             )}
           </tbody>
         </table>
       </div>
+
       {pages > 1 && (
-        <div style={{ display: "flex", gap: 6, justifyContent: "center", alignItems: "center" }}>
-          <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-            style={{ background: "none", border: `1px solid ${C.border}`, color: C.sub, borderRadius: 7,
-              padding: "4px 12px", cursor: "pointer", fontSize: 11, fontFamily: "'IBM Plex Mono',monospace" }}>Prev</button>
-          <span style={{ color: C.sub, fontSize: 11 }}>{page + 1} / {pages}</span>
-          <button onClick={() => setPage(p => Math.min(pages - 1, p + 1))} disabled={page === pages - 1}
-            style={{ background: "none", border: `1px solid ${C.border}`, color: C.sub, borderRadius: 7,
-              padding: "4px 12px", cursor: "pointer", fontSize: 11, fontFamily: "'IBM Plex Mono',monospace" }}>Next</button>
+        <div style={{ display:"flex", gap:8, justifyContent:"center", alignItems:"center" }}>
+          <button onClick={() => setPage(p => Math.max(0, p-1))} disabled={page === 0} style={{
+            background:"none", border:`1px solid ${C.border}`, color:C.sub, borderRadius:8,
+            padding:"4px 16px", cursor:"pointer", fontSize:12,
+            fontFamily:"'Rajdhani',sans-serif", fontWeight:600, letterSpacing:"0.06em",
+          }}>← PREV</button>
+          <span style={{ color:C.gold, fontSize:12, fontFamily:"'Cinzel',serif" }}>
+            {page+1} / {pages}
+          </span>
+          <button onClick={() => setPage(p => Math.min(pages-1, p+1))} disabled={page === pages-1} style={{
+            background:"none", border:`1px solid ${C.border}`, color:C.sub, borderRadius:8,
+            padding:"4px 16px", cursor:"pointer", fontSize:12,
+            fontFamily:"'Rajdhani',sans-serif", fontWeight:600, letterSpacing:"0.06em",
+          }}>NEXT →</button>
         </div>
       )}
     </div>
