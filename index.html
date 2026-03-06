@@ -237,21 +237,48 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 #main{padding:20px 24px;display:flex;flex-direction:column;gap:18px;}
 
 /* ─── KPI CARDS ─────────────────────────────────────────────────────── */
-.kpi-row{display:flex;gap:12px;flex-wrap:wrap;}
-.kpi-card {
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-top: 5px solid var(--accent-color); /* Strong top-accent bar */
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  padding: 20px;
+.kpi-row {
+  display: flex;
+  gap: 20px; /* Increased distance between cards */
+  flex-wrap: wrap;
+  padding: 10px 0;
+  perspective: 1000px; /* Needed for 3D effects */
 }
+.kpi-card {
+  flex: 1;
+  min-width: 200px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-top: 6px solid var(--accent-color); /* Thicker top accent */
+  border-radius: 12px;
+  padding: 24px 20px;
+  position: relative;
+  overflow: hidden;
+  
+  /* The "Coming Out" 3D Effect */
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 10px 20px rgba(0,0,0,0.08), 
+    0 6px 6px rgba(0,0,0,0.1); /* Layered shadows for depth */
 .kpi-value {
   color: #1a1a1a; /* Sharp black text */
   text-shadow: none; /* Remove the glow/shadow */
   font-size: 32px !important;
 }
-.kpi-card:hover{transform:translateY(-2px);}
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Aligns content vertically in middle */
+  align-items: flex-start;
+  min-height: 140px;
+}
+.kpi-card:hover {
+  transform: translateY(-10px) translateZ(20px); /* Moves up and "toward" user */
+  box-shadow: 
+    0 20px 30px rgba(0,0,0,0.12), 
+    0 15px 15px rgba(0,0,0,0.08);
+  border-color: var(--accent-color);
+}
 .kpi-card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:var(--accent-color,var(--gold));
@@ -266,12 +293,18 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   position:absolute;bottom:-4px;right:10px;
   font-size:48px;opacity:.06;line-height:1;user-select:none;
 }
-.kpi-label { color: #555; }
-.kpi-value{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:700;line-height:1;margin-bottom:6px;
-  text-shadow:0 0 30px currentColor;
-  transition:filter .2s;
+.kpi-label {
+  color: #6b7280;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.kpi-value {
+  color: #111827 !important; /* Sharp black */
+  text-shadow: none !important;
+  font-size: 36px !important;
+  font-weight: 800 !important;
+  font-family: 'Outfit', sans-serif !important;
+  margin: 8px 0;
 }
 .kpi-card:hover .kpi-value{filter:brightness(1.2);}
 .kpi-sub{font-size:10px;color:var(--sub);letter-spacing:.04em;}
