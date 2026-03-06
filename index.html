@@ -234,7 +234,14 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 }
 
 /* ─── MAIN CONTENT ──────────────────────────────────────────────────── */
-#main{padding:20px 24px;display:flex;flex-direction:column;gap:18px;}
+#main {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* Uniform distance between sections */
+  max-width: 1600px; /* Prevents stretching on ultra-wide screens */
+  margin: 0 auto;
+}
 
 /* ─── KPI CARDS ─────────────────────────────────────────────────────── */
 .kpi-row {
@@ -316,29 +323,30 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 /* ─── CHARTS GRID ───────────────────────────────────────────────────── */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Forces exactly 3 columns */
-  gap: 20px; /* Same gap as KPI cards for alignment */
+  grid-template-columns: repeat(3, 1fr); /* 3 Equal columns like Power BI */
+  grid-auto-rows: 320px; /* Forces all cards in a row to have same height */
+  gap: 16px;
   width: 100%;
 }
 .chart-card {
-  background: #ffffff; /* Pure white for contrast */
+  background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.02); /* Very soft shadow */
+  border-radius: 8px; /* Sharper corners like Power BI */
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
-  height: 320px; /* Fixed height so they are perfectly aligned horizontally */
 }
 .chart-card::before {
   display: none;
 }
 .chart-title {
   font-size: 11px;
+  color: #374151;
   font-weight: 700;
-  color: #374151; /* Dark gray for modern look */
-  text-transform: uppercase;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 8px;
 }
 .chart-title-bar{
   width:2px;height:12px;
@@ -348,15 +356,15 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 .chart-wrap{position:relative;height:200px;}
 
 /* ─── DATA TABLE ────────────────────────────────────────────────────── */
-.table-card{
-  background:linear-gradient(160deg,#1e1c14,#161410);
+.table-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 24px;
-  display:flex; flex-direction:column; gap:12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-  position:relative; overflow:hidden;
+  border-radius: 8px;
+  padding: 15px;
+  height: 500px; /* Fixed height for consistency */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .table-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .table-title{
@@ -371,7 +379,17 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   color: #111827;padding:6px 14px;font-size:11px;
   font-family:'Outfit',sans-serif;outline:none;width:220px;margin-left:auto;
 }
-.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+.tables-row {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr; /* Power BI style: Main Log and side Sales */
+  gap: 16px;
+  align-items: start;
+}
+table-wrap {
+  flex: 1;
+  overflow-y: auto; /* Scroll inside the table, not the whole page */
+  border: 1px solid #f3f4f6;
+}
 table{width:100%;border-collapse:collapse;font-size:12px;}
 thead tr{background: #f3f4f6;(180deg,#201e14,#181610);}
 th{
@@ -532,6 +550,20 @@ footer{
 
   <!-- ═══ OVERVIEW TAB ══════════════════════════════════════════════ -->
   <div class="tab-panel active" id="panel-overview">
+    <div class="charts-grid">
+        </div>
+
+    <div class="tables-row" style="margin-top: 20px;">
+        <div class="table-card">
+            <div class="table-title">Lead & Visitor Log</div>
+            <div class="table-wrap"><table id="tbl-activity-overview"></table></div>
+        </div>
+        <div class="table-card">
+            <div class="table-title">Recent Sales</div>
+            <div class="table-wrap"><table id="tbl-sales-overview"></table></div>
+        </div>
+    </div>
+</div>
     <div class="charts-grid">
       <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Lead Source — Count</div><div class="chart-wrap"><canvas id="ch-source"></canvas></div></div>
       <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Lead Pipeline</div><div class="chart-wrap"><canvas id="ch-pipeline"></canvas></div></div>
