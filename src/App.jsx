@@ -5,19 +5,6 @@ import {
 } from "recharts";
 import { useSheetTab, transformVisitors, transformLeads, transformSales } from "./useSheetData";
 
-/* ══════════════════════════════════════════════════════════════════
-   GOOGLE SHEETS CONFIG
-   ══════════════════════════════════════════════════════════════════
-   HOW TO SET UP:
-   1. Open your Google Sheet
-   2. Go to File → Share → Publish to web
-   3. For each tab: select the tab name, choose "Comma-separated values (.csv)", click Publish
-   4. Copy the URL and paste it below for each sheet tab
-
-   Example URL format:
-   https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/pub?gid=SHEET_GID&single=true&output=csv
-   ══════════════════════════════════════════════════════════════════ */
-
 const SHEET_URLS = {
   visitors: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=0&single=true&output=csv",
   leads:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=2066525621&single=true&output=csv",
