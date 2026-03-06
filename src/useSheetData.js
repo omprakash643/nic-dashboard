@@ -109,22 +109,36 @@ function pick(row, ...keys) {
   return "";
 }
 
+/**
+ * NORMALIZE — trim whitespace + UPPERCASE
+ * Matches Power BI "Master" logic: combine all sheets, trim, uppercase
+ * This ensures filters work consistently across all 3 sheets
+ * e.g. "Ashwin Garg", "ASHWIN GARG", " ashwin garg " → all become "ASHWIN GARG"
+ */
+function norm(val) {
+  return String(val || "").trim().toUpperCase();
+}
+
 /** Strip ₹ and commas, parse as number */
 function toNum(val) {
   if (!val) return 0;
   return parseFloat(String(val).replace(/[₹,\s]/g, "")) || 0;
 }
 
-/* ── TRANSFORMS: exact Power BI column names ── */
+/* ── TRANSFORMS: exact Power BI column names ──
+   Filter fields (user, state, leadType) are NORMALIZED (trim + uppercase)
+   so filters match perfectly across Visitor, Lead, Sales sheets
+   Display fields (customer, contact, remarks) keep original casing
+── */
 
 export function transformVisitors(rows) {
   return rows.map(r => ({
     date:        pick(r, "Date"),
-    leadType:    pick(r, "Lead Type"),
-    user:        pick(r, "User"),
-    customer:    pick(r, "Customer Name"),
+    leadType:    norm(pick(r, "Lead Type")),       // normalized for filter
+    user:        norm(pick(r, "User")),             // normalized for filter
+    customer:    pick(r, "Customer Name"),          // keep original for display
     contact:     pick(r, "Contact Person"),
-    state:       pick(r, "State"),
+    state:       norm(pick(r, "State")),            // normalized for filter
     city:        pick(r, "City", "CIty"),
     competitors: pick(r, "Competitors", "Mayer Existing Customer"),
     remarks:     pick(r, "Remark", "Remarks"),
@@ -136,13 +150,13 @@ export function transformLeads(rows) {
     date:        pick(r, "Date"),
     uqn:         pick(r, "GST NO.", "UQN"),
     source:      pick(r, "Source"),
-    user:        pick(r, "User"),
+    user:        norm(pick(r, "User")),             // normalized for filter
     customer:    pick(r, "Customer Name"),
     contact:     pick(r, "Contact Person"),
     mobile:      pick(r, "Mobile"),
     remarks:     pick(r, "Remark", "Remarks"),
-    state:       pick(r, "State"),
-    leadType:    pick(r, "Lead Type"),
+    state:       norm(pick(r, "State")),            // normalized for filter
+    leadType:    norm(pick(r, "Lead Type")),        // normalized for filter
     stage:       pick(r, "Stage"),
     lastFollow:  pick(r, "Last Follow Date"),
   })).filter(r => r.date && r.date !== "Date");
@@ -153,10 +167,10 @@ export function transformSales(rows) {
   return rows.map(r => ({
     date:     pick(r, "Date"),
     customer: pick(r, "Customer"),
-    user:     pick(r, "User"),
-    leadType: pick(r, "Lead Type"),
+    user:     norm(pick(r, "User")),                // normalized for filter
+    leadType: norm(pick(r, "Lead Type")),           // normalized for filter
     amount:   toNum(pick(r, "PO Amount", "Amount", "Sale Amount", "Order Value", "Value", "Revenue")),
-    state:    pick(r, "State"),
+    state:    norm(pick(r, "State")),               // normalized for filter
     products: pick(r, "Products"),
     gst:      pick(r, "GST"),
   })).filter(r => r.date && r.date !== "Date");
