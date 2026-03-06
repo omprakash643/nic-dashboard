@@ -70,20 +70,30 @@ export function useSheetTab(url, refreshMs = 300000) {
 }
 
 /**
+ * Helper: pick first non-empty value from multiple possible keys
+ */
+function pick(row, ...keys) {
+  for (const k of keys) {
+    if (row[k] !== undefined && row[k] !== "") return row[k];
+  }
+  return "";
+}
+
+/**
  * Transforms raw sheet rows into VISITORS format
- * Column names in sheet must match exactly (case-sensitive)
+ * Handles both your Google Sheet column names AND the old hardcoded names
  */
 export function transformVisitors(rows) {
   return rows.map(r => ({
-    date:     r.date     || "",
-    leadType: r.leadType || r.lead_type || r["Lead Type"] || "",
-    user:     r.user     || r.User || "",
-    customer: r.customer || r.Customer || "",
-    contact:  r.contact  || r.Contact || "",
-    state:    r.state    || r.State || "",
-    city:     r.city     || r.City || "",
-    existing: r.existing || r.Existing || "",
-    remarks:  r.remarks  || r.Remarks || "",
+    date:     pick(r, "Date", "date"),
+    leadType: pick(r, "Lead Type", "leadType", "lead_type"),
+    user:     pick(r, "User", "user"),
+    customer: pick(r, "Customer Name", "customer", "Customer"),
+    contact:  pick(r, "Contact Person", "contact", "Contact"),
+    state:    pick(r, "State", "state"),
+    city:     pick(r, "CIty", "City", "city"),
+    existing: pick(r, "Meyer Existing Customer", "existing", "Existing"),
+    remarks:  pick(r, "Remarks", "remarks"),
   })).filter(r => r.date);
 }
 
@@ -92,17 +102,17 @@ export function transformVisitors(rows) {
  */
 export function transformLeads(rows) {
   return rows.map(r => ({
-    date:     r.date     || "",
-    uqn:      r.uqn      || r.UQN || "",
-    source:   r.source   || r.Source || "",
-    user:     r.user     || r.User || "",
-    customer: r.customer || r.Customer || "",
-    contact:  r.contact  || r.Contact || "",
-    mobile:   r.mobile   || r.Mobile || "",
-    remarks:  r.remarks  || r.Remarks || "",
-    state:    r.state    || r.State || "",
-    leadType: r.leadType || r.lead_type || r["Lead Type"] || "",
-    stage:    r.stage    || r.Stage || "",
+    date:     pick(r, "Date", "date"),
+    uqn:      pick(r, "UQN", "uqn"),
+    source:   pick(r, "Source", "source", "Lead Source"),
+    user:     pick(r, "User", "user"),
+    customer: pick(r, "Customer Name", "customer", "Customer"),
+    contact:  pick(r, "Contact Person", "contact", "Contact"),
+    mobile:   pick(r, "Mobile", "mobile", "Phone"),
+    remarks:  pick(r, "Remarks", "remarks"),
+    state:    pick(r, "State", "state"),
+    leadType: pick(r, "Lead Type", "leadType", "lead_type"),
+    stage:    pick(r, "Stage", "stage", "Lead Stage"),
   })).filter(r => r.date);
 }
 
@@ -111,11 +121,11 @@ export function transformLeads(rows) {
  */
 export function transformSales(rows) {
   return rows.map(r => ({
-    date:     r.date     || "",
-    customer: r.customer || r.Customer || "",
-    user:     r.user     || r.User || "",
-    leadType: r.leadType || r.lead_type || r["Lead Type"] || "",
-    amount:   parseFloat(r.amount || r.Amount || "0") || 0,
-    state:    r.state    || r.State || "",
+    date:     pick(r, "Date", "date"),
+    customer: pick(r, "Customer Name", "customer", "Customer"),
+    user:     pick(r, "User", "user"),
+    leadType: pick(r, "Lead Type", "leadType", "lead_type"),
+    amount:   parseFloat(pick(r, "Amount", "amount", "Sale Amount", "Revenue") || "0") || 0,
+    state:    pick(r, "State", "state"),
   })).filter(r => r.date);
 }
