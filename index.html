@@ -314,29 +314,31 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 }
 
 /* ─── CHARTS GRID ───────────────────────────────────────────────────── */
-.charts-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:14px;
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Forces exactly 3 columns */
+  gap: 20px; /* Same gap as KPI cards for alignment */
+  width: 100%;
 }
-.chart-card{
-  background:linear-gradient(160deg,#1e1c14 0%,#171410 60%,#131108 100%);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:16px 18px;
-  box-shadow:0 8px 32px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.03) inset;
-  position:relative; overflow:hidden;
+.chart-card {
+  background: #ffffff; /* Pure white for contrast */
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02); /* Very soft shadow */
+  display: flex;
+  flex-direction: column;
+  height: 320px; /* Fixed height so they are perfectly aligned horizontally */
 }
-.chart-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,#6b4f1a,#c8973a,#e8b84b,#c8973a,#6b4f1a,transparent);
+.chart-card::before {
+  display: none;
 }
-.chart-title{
-  font-size:10px;font-weight:600;color:var(--gold);
-  text-transform:uppercase;letter-spacing:.18em;
-  font-family:'Outfit',sans-serif;
-  margin-bottom:14px;margin-top:4px;
-  display:flex;align-items:center;gap:8px;
+.chart-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #374151; /* Dark gray for modern look */
+  text-transform: uppercase;
+  margin-bottom: 20px;
 }
 .chart-title-bar{
   width:2px;height:12px;
@@ -348,10 +350,12 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 /* ─── DATA TABLE ────────────────────────────────────────────────────── */
 .table-card{
   background:linear-gradient(160deg,#1e1c14,#161410);
-  border:1px solid var(--border);
-  border-radius:14px; padding:18px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
   display:flex; flex-direction:column; gap:12px;
-  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
   position:relative; overflow:hidden;
 }
 .table-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
@@ -363,15 +367,16 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 .table-title-bar{width:2px;height:14px;border-radius:1px;display:inline-block;}
 .table-count{color:var(--dim);font-weight:500;}
 .search-input{
-  background:#1a1510;border:1px solid var(--border);border-radius:8px;
-  color:var(--text);padding:6px 14px;font-size:11px;
+  background: #f9fafb;border:1px solid var(--border);border: 1px solid #d1d5db;
+  color: #111827;padding:6px 14px;font-size:11px;
   font-family:'Outfit',sans-serif;outline:none;width:220px;margin-left:auto;
 }
 .table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
 table{width:100%;border-collapse:collapse;font-size:12px;}
-thead tr{background:linear-gradient(180deg,#201e14,#181610);}
+thead tr{background: #f3f4f6;(180deg,#201e14,#181610);}
 th{
   padding:10px 14px;text-align:left;font-weight:700;
+  color: #4b5563 !important;
   border-bottom:1px solid var(--border);
   font-family:'Outfit',sans-serif;font-size:9px;
   letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
@@ -380,6 +385,8 @@ th{
 th:hover{opacity:.8;}
 td{
   padding:9px 14px;font-family:'Outfit',sans-serif;
+  color: #1f2937 !important;
+  border-bottom: 1px solid #f3f4f6;
   letter-spacing:.02em;white-space:nowrap;
   max-width:240px;overflow:hidden;text-overflow:ellipsis;
   border-bottom:1px solid rgba(46,37,24,.3);
@@ -776,7 +783,7 @@ Chart.defaults.color = "#9e8c70";
 function grp(arr,key,top=10){const m={};arr.forEach(r=>{if(r[key])m[r[key]]=(m[r[key]]||0)+1;});return Object.entries(m).map(([k,v])=>({k,v})).sort((a,b)=>b.v-a.v).slice(0,top);}
 function grpAmt(arr,key,top=8){const m={};arr.forEach(r=>{if(r[key])m[r[key]]=(m[r[key]]||0)+(r.amount||0);});return Object.entries(m).map(([k,v])=>({k,v})).sort((a,b)=>b.v-a.v).slice(0,top);}
 
-const gridColor = "rgba(0, 0, 0, 0.1)"; // Light gray lines instead of dark
+const gridColor = "rgba(0, 0, 0, 0.05)"; // Very faint gray lines
 const tooltipStyle = {
   backgroundColor:"#1a1510",borderColor:"#2e2518",borderWidth:1,
   titleColor:"#c8973a",bodyColor:"#f0e8d8",
