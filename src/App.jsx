@@ -23,48 +23,51 @@ const PALETTE = ["#00cfff","#00e68a","#f0b429","#ff5075","#b57bff","#ff8c42","#4
 
 /* ── STATIC FALLBACK DATA ───────────────────────────────────────────────────── */
 const STATIC_VISITORS = [
-  {date:"2026-01-12",leadType:"MCS+MRC",user:"Ashwin Garg",customer:"sp pulses",contact:"tikam sharma",state:"Rajasthan",city:"ajmer",competitors:"No",remarks:"Sortex on moong mogar 10 chute"},
-  {date:"2026-01-27",leadType:"COLOR SORTER",user:"Ashwin Garg",customer:"hem industries",contact:"rishabh",state:"Rajasthan",city:"Ajmer",competitors:"No",remarks:"Sortex on Moong mogar, Final price given"},
-  {date:"2026-01-23",leadType:"COLOR SORTER",user:"Shivgatulla",customer:"Chetak roller flour mill",contact:"Nitesh khokhar",state:"Uttar Pradesh",city:"Basti",competitors:"Competitors",remarks:"Discussion for color sorter"},
-  {date:"2026-01-29",leadType:"Kaeser AIR COMPRESSOR",user:"Jaipal",customer:"SAI KIRPA STEEL INDUSTRY",contact:"RAKESH KUMAR JI",state:"Delhi",city:"BAWANA",competitors:"compititor",remarks:"REQUIR COMPRESSOR IN NEXT 6 MONTHS"},
-  {date:"2026-01-24",leadType:"COLOR SORTER",user:"Rahul Mahant",customer:"Vardhan industries",contact:"Aman jain",state:"Madhya Pradesh",city:"Begamganj",competitors:"Milltech",remarks:"Plant shutdown due loss"},
-  {date:"2026-01-10",leadType:"Kaeser AIR COMPRESSOR",user:"Govind",customer:"Shree shyam industry",contact:"Pardeep kasniya",state:"Haryana",city:"Fathebad",competitors:"Competitor",remarks:"Meeting with MD"},
-  {date:"2026-01-01",leadType:"MCS+MRC",user:"Ashwin Garg",customer:"Agrawal Bandhu",contact:"Sahil Agrawal",state:"Madhya Pradesh",city:"Indore",competitors:"No",remarks:"8 chute DLT on chana dal"},
-  {date:"2026-01-03",leadType:"COLOR SORTER",user:"Shivgatulla",customer:"Mahashakti foods pvt ltd",contact:"Aakash jalan",state:"Uttar Pradesh",city:"Gorakhpur",competitors:"Competitors",remarks:"13 Chute color sorter enquiry"},
-  {date:"2026-01-15",leadType:"Kaeser AIR COMPRESSOR",user:"Himanshu Nagar",customer:"Shree balaji food industries",contact:"Kamlesh Gupta",state:"Madhya Pradesh",city:"Bhind",competitors:"Construction",remarks:"Plan colour sorter next Year"},
-  {date:"2026-01-17",leadType:"Kaeser AIR COMPRESSOR",user:"Govind",customer:"Lakhdatar international Pvt Ltd",contact:"Shivam goyal",state:"Haryana",city:"Ghrounda",competitors:"Na",remarks:"Plant add, Requirement 2 month"},
+  {date:"2026-01-12",leadType:"MCS+MRC",user:"ASHWIN GARG",customer:"sp pulses",contact:"tikam sharma",state:"RAJASTHAN",city:"ajmer",competitors:"No",remarks:"Sortex on moong mogar 10 chute"},
+  {date:"2026-01-27",leadType:"COLOR SORTER",user:"ASHWIN GARG",customer:"hem industries",contact:"rishabh",state:"RAJASTHAN",city:"Ajmer",competitors:"No",remarks:"Sortex on Moong mogar, Final price given"},
+  {date:"2026-01-23",leadType:"COLOR SORTER",user:"SHIVGATULLA",customer:"Chetak roller flour mill",contact:"Nitesh khokhar",state:"UTTAR PRADESH",city:"Basti",competitors:"Competitors",remarks:"Discussion for color sorter"},
+  {date:"2026-01-29",leadType:"KAESER AIR COMPRESSOR",user:"JAIPAL",customer:"SAI KIRPA STEEL INDUSTRY",contact:"RAKESH KUMAR JI",state:"DELHI",city:"BAWANA",competitors:"compititor",remarks:"REQUIR COMPRESSOR IN NEXT 6 MONTHS"},
+  {date:"2026-01-24",leadType:"COLOR SORTER",user:"RAHUL MAHANT",customer:"Vardhan industries",contact:"Aman jain",state:"MADHYA PRADESH",city:"Begamganj",competitors:"Milltech",remarks:"Plant shutdown due loss"},
+  {date:"2026-01-10",leadType:"KAESER AIR COMPRESSOR",user:"GOVIND",customer:"Shree shyam industry",contact:"Pardeep kasniya",state:"HARYANA",city:"Fathebad",competitors:"Competitor",remarks:"Meeting with MD"},
+  {date:"2026-01-01",leadType:"MCS+MRC",user:"ASHWIN GARG",customer:"Agrawal Bandhu",contact:"Sahil Agrawal",state:"MADHYA PRADESH",city:"Indore",competitors:"No",remarks:"8 chute DLT on chana dal"},
+  {date:"2026-01-03",leadType:"COLOR SORTER",user:"SHIVGATULLA",customer:"Mahashakti foods pvt ltd",contact:"Aakash jalan",state:"UTTAR PRADESH",city:"Gorakhpur",competitors:"Competitors",remarks:"13 Chute color sorter enquiry"},
+  {date:"2026-01-15",leadType:"KAESER AIR COMPRESSOR",user:"HIMANSHU NAGAR",customer:"Shree balaji food industries",contact:"Kamlesh Gupta",state:"MADHYA PRADESH",city:"Bhind",competitors:"Construction",remarks:"Plan colour sorter next Year"},
+  {date:"2026-01-17",leadType:"KAESER AIR COMPRESSOR",user:"GOVIND",customer:"Lakhdatar international Pvt Ltd",contact:"Shivam goyal",state:"HARYANA",city:"Ghrounda",competitors:"Na",remarks:"Plant add, Requirement 2 month"},
 ];
 const STATIC_LEADS = [
-  {date:"2026-01-15",uqn:"KC/NICPL0G000/2026/2930",source:"By Meeting",user:"Govind",customer:"M/s JITENDRA COTTEX",contact:"Mr .Sachin jaglan",mobile:"+91-9112000063",remarks:"Need- 30hp Compressor",state:"Haryana",leadType:"Kaeser AIR COMPRESSOR",stage:"Quotation Send"},
-  {date:"2026-01-15",uqn:"M001/NICPL0S001/2026/2929",source:"Calling",user:"Shivgatulla",customer:"Sudipta hati",contact:"Sudipta hati",mobile:"8293916079",remarks:"Quotation send and he is finalized",state:"West Bengal",leadType:"MCS+MRC",stage:"Quotation Send"},
-  {date:"2026-01-15",uqn:"CS/ERGYT/2026/2927",source:"Google Adwords",user:"Sachin Kumar 2",customer:"GDP AGRO AND FOOD PRODUCTS",contact:"Mr. Dharam Aggarwal Ji",mobile:"+91-9827259553",remarks:"Need Meyer Color Sorter for Peanuts",state:"Madhya Pradesh",leadType:"COLOR SORTER",stage:"Follow up"},
-  {date:"2026-01-14",uqn:"CS/MU/2026/2926",source:"By Meeting",user:"Murli dar sukla",customer:"JAY AMBEY PULSES",contact:"Sipoliya ji",mobile:"+91-7355020465",remarks:"he want 8 chute meyer color sorter",state:"Uttar Pradesh",leadType:"COLOR SORTER",stage:"New"},
-  {date:"2026-01-13",uqn:"CS/NICUU001/2026/2920",source:"Calling",user:"Ujjwal Upadhyay",customer:"Mr akash mittal",contact:"Mr akash mittal",mobile:"7415388948",remarks:"he told approximate price",state:"Madhya Pradesh",leadType:"COLOR SORTER",stage:"Hot Lead"},
-  {date:"2026-01-10",uqn:"CS/ERGYT/2026/2917",source:"Google Adwords",user:"Sachin Kumar 2",customer:"JAGDAMBA ENTERPRISES",contact:"Mr. Sunil Kumar Agarwal",mobile:"+91-9784088462",remarks:"Need Color Sorter For Groundnuts",state:"Rajasthan",leadType:"COLOR SORTER",stage:"Quotation Send"},
-  {date:"2026-01-29",uqn:"CS/DEMORM0002/2026/2976",source:"By Meeting",user:"Rahul Mahant",customer:"Vardhman dall milll",contact:"Rahul jain",mobile:"9893480631",remarks:"Planning 6 chute sortex with 30 hp compressor",state:"Madhya Pradesh",leadType:"COLOR SORTER",stage:"Hot Lead"},
-  {date:"2026-02-28",uqn:"CS/NICPLR001/2026/3064",source:"By Visit",user:"Rahul Verma",customer:"Palak traders",contact:"Aman Khandelwal",mobile:"+917000969542",remarks:"CS 6 chute requirement",state:"Uttar Pradesh",leadType:"COLOR SORTER",stage:"Hot Lead"},
-  {date:"2026-02-13",uqn:"CS/NICUU001/2026/3008",source:"By Meeting",user:"Ujjwal Upadhyay",customer:"Sujay Agro Industries",contact:"Manish Pamecha",mobile:"+91-9301705009",remarks:"sortex not finalized yet",state:"Madhya Pradesh",leadType:"COLOR SORTER",stage:"Quotation Send"},
-  {date:"2026-02-09",uqn:"CS/MU/2026/2994",source:"By Meeting",user:"Murli dar sukla",customer:"SS enterprises",contact:"KAMAL JAIN",mobile:"+91-9111234572",remarks:"finalize thinker model 8 chute",state:"Madhya Pradesh",leadType:"COLOR SORTER",stage:"Hot Lead"},
+  {date:"2026-01-15",uqn:"KC/NICPL0G000/2026/2930",source:"By Meeting",user:"GOVIND",customer:"M/s JITENDRA COTTEX",contact:"Mr .Sachin jaglan",mobile:"+91-9112000063",remarks:"Need- 30hp Compressor",state:"HARYANA",leadType:"KAESER AIR COMPRESSOR",stage:"Quotation Send"},
+  {date:"2026-01-15",uqn:"M001/NICPL0S001/2026/2929",source:"Calling",user:"SHIVGATULLA",customer:"Sudipta hati",contact:"Sudipta hati",mobile:"8293916079",remarks:"Quotation send and he is finalized",state:"WEST BENGAL",leadType:"MCS+MRC",stage:"Quotation Send"},
+  {date:"2026-01-15",uqn:"CS/ERGYT/2026/2927",source:"Google Adwords",user:"SACHIN KUMAR 2",customer:"GDP AGRO AND FOOD PRODUCTS",contact:"Mr. Dharam Aggarwal Ji",mobile:"+91-9827259553",remarks:"Need Meyer Color Sorter for Peanuts",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Follow up"},
+  {date:"2026-01-14",uqn:"CS/MU/2026/2926",source:"By Meeting",user:"MURLI DAR SUKLA",customer:"JAY AMBEY PULSES",contact:"Sipoliya ji",mobile:"+91-7355020465",remarks:"he want 8 chute meyer color sorter",state:"UTTAR PRADESH",leadType:"COLOR SORTER",stage:"New"},
+  {date:"2026-01-13",uqn:"CS/NICUU001/2026/2920",source:"Calling",user:"UJJWAL UPADHYAY",customer:"Mr akash mittal",contact:"Mr akash mittal",mobile:"7415388948",remarks:"he told approximate price",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
+  {date:"2026-01-10",uqn:"CS/ERGYT/2026/2917",source:"Google Adwords",user:"SACHIN KUMAR 2",customer:"JAGDAMBA ENTERPRISES",contact:"Mr. Sunil Kumar Agarwal",mobile:"+91-9784088462",remarks:"Need Color Sorter For Groundnuts",state:"RAJASTHAN",leadType:"COLOR SORTER",stage:"Quotation Send"},
+  {date:"2026-01-29",uqn:"CS/DEMORM0002/2026/2976",source:"By Meeting",user:"RAHUL MAHANT",customer:"Vardhman dall milll",contact:"Rahul jain",mobile:"9893480631",remarks:"Planning 6 chute sortex with 30 hp compressor",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
+  {date:"2026-02-28",uqn:"CS/NICPLR001/2026/3064",source:"By Visit",user:"RAHUL VERMA",customer:"Palak traders",contact:"Aman Khandelwal",mobile:"+917000969542",remarks:"CS 6 chute requirement",state:"UTTAR PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
+  {date:"2026-02-13",uqn:"CS/NICUU001/2026/3008",source:"By Meeting",user:"UJJWAL UPADHYAY",customer:"Sujay Agro Industries",contact:"Manish Pamecha",mobile:"+91-9301705009",remarks:"sortex not finalized yet",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Quotation Send"},
+  {date:"2026-02-09",uqn:"CS/MU/2026/2994",source:"By Meeting",user:"MURLI DAR SUKLA",customer:"SS enterprises",contact:"KAMAL JAIN",mobile:"+91-9111234572",remarks:"finalize thinker model 8 chute",state:"MADHYA PRADESH",leadType:"COLOR SORTER",stage:"Hot Lead"},
 ];
 const STATIC_SALES = [
-  {date:"2026-01-01",customer:"HINDUSTHAN AGRI SEEDS PVT LTD",user:"Murli dar sukla",leadType:"MCS with KAESER Compressor",amount:3500000,state:"West Bengal",products:"MCS",gst:""},
-  {date:"2026-01-01",customer:"Bankura agro processing Pvt.ltd",user:"Murli dar sukla",leadType:"MCS+MRC",amount:3751000,state:"West Bengal",products:"MCS+MRC",gst:""},
-  {date:"2026-01-06",customer:"Shree Radha Laxmi Industries",user:"Arvind Kumar",leadType:"Grain Dryer",amount:6232594,state:"Uttar Pradesh",products:"Grain Dryer",gst:""},
-  {date:"2026-01-06",customer:"Singhai & singhai",user:"RAHUL SIR",leadType:"COLOR SORTER",amount:5200000,state:"Uttar Pradesh",products:"CS",gst:""},
-  {date:"2026-01-07",customer:"Prashant maheshwari",user:"Rahul Mahant",leadType:"MCS+MRC",amount:3121000,state:"Madhya Pradesh",products:"MCS+MRC",gst:""},
-  {date:"2026-01-10",customer:"AGRAWAL BANDHU AGRO TECH PVT.LTD.",user:"Murli dar sukla",leadType:"COLOR SORTER",amount:3200000,state:"Madhya Pradesh",products:"CS",gst:""},
-  {date:"2026-01-12",customer:"Dhirendra International pvt ltd",user:"Ashwin Garg",leadType:"COLOR SORTER",amount:4500000,state:"Madhya Pradesh",products:"CS",gst:""},
-  {date:"2026-01-12",customer:"RAJAT AGRO LLP",user:"Ashwin Garg",leadType:"COLOR SORTER",amount:4100000,state:"Gujarat",products:"CS",gst:""},
-  {date:"2026-01-14",customer:"Shree Balaji Export",user:"Ashwin Garg",leadType:"COLOR SORTER",amount:3750000,state:"Madhya Pradesh",products:"CS",gst:""},
-  {date:"2026-01-14",customer:"M.M PULSES",user:"Murli dar sukla",leadType:"AIR DRYER",amount:4550000,state:"Madhya Pradesh",products:"Air Dryer",gst:""},
-  {date:"2026-01-15",customer:"Shree Giriraj Enterprises",user:"Ashwin Garg",leadType:"COLOR SORTER",amount:2000000,state:"Madhya Pradesh",products:"CS",gst:""},
-  {date:"2026-01-15",customer:"HOTWANI FOOD INGREDIENTS",user:"Ashwin Garg",leadType:"MCS+MRC",amount:2470000,state:"Madhya Pradesh",products:"MCS+MRC",gst:""},
-  {date:"2026-01-25",customer:"Prashant maheshwari",user:"Rahul Mahant",leadType:"MCS+MRC",amount:2800000,state:"Madhya Pradesh",products:"MCS+MRC",gst:""},
-  {date:"2026-02-05",customer:"Anand Foods",user:"Arvind Kumar",leadType:"COLOR SORTER",amount:3900000,state:"Uttar Pradesh",products:"CS",gst:""},
-  {date:"2026-02-13",customer:"Hem industries",user:"Ashwin Garg",leadType:"COLOR SORTER",amount:4200000,state:"Rajasthan",products:"CS",gst:""},
+  {date:"2026-01-01",customer:"HINDUSTHAN AGRI SEEDS PVT LTD",user:"MURLI DAR SUKLA",leadType:"MCS WITH KAESER COMPRESSOR",amount:3500000,state:"WEST BENGAL",products:"MCS",gst:""},
+  {date:"2026-01-01",customer:"Bankura agro processing Pvt.ltd",user:"MURLI DAR SUKLA",leadType:"MCS+MRC",amount:3751000,state:"WEST BENGAL",products:"MCS+MRC",gst:""},
+  {date:"2026-01-06",customer:"Shree Radha Laxmi Industries",user:"ARVIND KUMAR",leadType:"GRAIN DRYER",amount:6232594,state:"UTTAR PRADESH",products:"Grain Dryer",gst:""},
+  {date:"2026-01-06",customer:"Singhai & singhai",user:"RAHUL SIR",leadType:"COLOR SORTER",amount:5200000,state:"UTTAR PRADESH",products:"CS",gst:""},
+  {date:"2026-01-07",customer:"Prashant maheshwari",user:"RAHUL MAHANT",leadType:"MCS+MRC",amount:3121000,state:"MADHYA PRADESH",products:"MCS+MRC",gst:""},
+  {date:"2026-01-10",customer:"AGRAWAL BANDHU AGRO TECH PVT.LTD.",user:"MURLI DAR SUKLA",leadType:"COLOR SORTER",amount:3200000,state:"MADHYA PRADESH",products:"CS",gst:""},
+  {date:"2026-01-12",customer:"Dhirendra International pvt ltd",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:4500000,state:"MADHYA PRADESH",products:"CS",gst:""},
+  {date:"2026-01-12",customer:"RAJAT AGRO LLP",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:4100000,state:"GUJARAT",products:"CS",gst:""},
+  {date:"2026-01-14",customer:"Shree Balaji Export",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:3750000,state:"MADHYA PRADESH",products:"CS",gst:""},
+  {date:"2026-01-14",customer:"M.M PULSES",user:"MURLI DAR SUKLA",leadType:"AIR DRYER",amount:4550000,state:"MADHYA PRADESH",products:"Air Dryer",gst:""},
+  {date:"2026-01-15",customer:"Shree Giriraj Enterprises",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:2000000,state:"MADHYA PRADESH",products:"CS",gst:""},
+  {date:"2026-01-15",customer:"HOTWANI FOOD INGREDIENTS",user:"ASHWIN GARG",leadType:"MCS+MRC",amount:2470000,state:"MADHYA PRADESH",products:"MCS+MRC",gst:""},
+  {date:"2026-01-25",customer:"Prashant maheshwari",user:"RAHUL MAHANT",leadType:"MCS+MRC",amount:2800000,state:"MADHYA PRADESH",products:"MCS+MRC",gst:""},
+  {date:"2026-02-05",customer:"Anand Foods",user:"ARVIND KUMAR",leadType:"COLOR SORTER",amount:3900000,state:"UTTAR PRADESH",products:"CS",gst:""},
+  {date:"2026-02-13",customer:"Hem industries",user:"ASHWIN GARG",leadType:"COLOR SORTER",amount:4200000,state:"RAJASTHAN",products:"CS",gst:""},
 ];
 
 /* ── HELPERS ────────────────────────────────────────────────────────────────── */
+// Same normalize function as useSheetData — TRIM + UPPERCASE for filter fields
+const norm = v => String(v || "").trim().toUpperCase();
+
 function fmt(n) {
   if (!n) return "₹0";
   if (n >= 1e7) return `₹${(n/1e7).toFixed(2)} Cr`;
