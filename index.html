@@ -135,6 +135,21 @@ header {
 }
 
 /* ─── FILTER BAR ────────────────────────────────────────────────────── */
+/* Zoom effect when clicking */
+@keyframes zoomSelect {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* Gentle shake effect for the active filter */
+@keyframes activeShake {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(1deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-1deg); }
+  100% { transform: rotate(0deg); }
+}
 #filter-bar {
   background: #ffffff; /* Matches your white header */
   border-bottom: 1px solid #e5e7eb; /* Soft light gray border */
@@ -168,6 +183,7 @@ header {
   font-family: 'Outfit', sans-serif;
   font-weight: 500;
   cursor: pointer;
+  /* ... keep your existing styles ... */
   transition: all .2s;
 }
 .pill:hover {
@@ -175,20 +191,26 @@ header {
   border-color: var(--gold);
   transform: none; /* Removed the lift effect for a flatter Power BI look */
 }
+.pill:active {
+  animation: zoomSelect 0.3s ease-out;
+}
 .pill.active-cyan {
   border-color: #00aed9;
   background: #e0f2fe;
   color: #00aed9;
+  animation: activeShake 0.4s ease-in-out infinite
 }
 .pill.active-violet {
   border-color: #9b59b6;
   background: #f5f3ff;
   color: #9b59b6;
+  animation: activeShake 0.4s ease-in-out infinite
 }
 .pill.active-green {
   border-color: #48c78e;
   background: #ecfdf5;
   color: #065f46;
+  animation: activeShake 0.4s ease-in-out infinite
 }
 input[type="date"] {
   background: #ffffff;
