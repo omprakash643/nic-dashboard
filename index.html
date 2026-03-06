@@ -46,20 +46,19 @@ body {
 .spin{animation:spin 1s linear infinite;display:inline-block;}
 
 /* ─── HEADER ────────────────────────────────────────────────────────── */
-header{
-  background:linear-gradient(180deg,#1e1a12 0%,#161208 100%);
-  border-bottom:1px solid var(--border);
-  padding:0 24px;
-  height:64px;
-  display:flex;
-  align-items:center;
-  gap:14px;
-  position:sticky;
-  top:0;
-  z-index:200;
-  box-shadow:0 4px 32px rgba(0,0,0,.7), 0 1px 0 rgba(200,151,58,.15);
+header {
+  background: #ffffff; /* Pure white header */
+  border-bottom: 2px solid var(--border);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Softer shadow */
 }
 
+#filter-bar {
+  background: var(--surface); /* Use your gold/tan surface color */
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.brand-name { color: #000; } /* Make text black for readability */
 /* ─── LOGO AREA ─────────────────────────────────────────────────────── */
 /* 
   ╔══════════════════════════════════════════════════════════════╗
@@ -194,12 +193,17 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 /* ─── KPI CARDS ─────────────────────────────────────────────────────── */
 .kpi-row{display:flex;gap:12px;flex-wrap:wrap;}
 .kpi-card {
-  background: var(--card); /* Bright white */
-  border: 3px solid var(--accent-color); /* Thicker colored borders */
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--accent-color); /* Strong top-accent bar */
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  padding: 20px;
 }
 .kpi-value {
-  color: #000000; /* Solid black for high contrast */
+  color: #1a1a1a; /* Sharp black text */
+  text-shadow: none; /* Remove the glow/shadow */
+  font-size: 32px !important;
 }
 .kpi-card:hover{transform:translateY(-2px);}
 .kpi-card::before{
@@ -216,10 +220,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   position:absolute;bottom:-4px;right:10px;
   font-size:48px;opacity:.06;line-height:1;user-select:none;
 }
-.kpi-label{
-  font-size:9px;color:var(--sub);letter-spacing:.2em;
-  font-weight:600;text-transform:uppercase;margin-bottom:10px;
-}
+.kpi-label { color: #555; }
 .kpi-value{
   font-family:'Cormorant Garamond',serif;
   font-weight:700;line-height:1;margin-bottom:6px;
@@ -696,7 +697,7 @@ Chart.defaults.color = "#9e8c70";
 function grp(arr,key,top=10){const m={};arr.forEach(r=>{if(r[key])m[r[key]]=(m[r[key]]||0)+1;});return Object.entries(m).map(([k,v])=>({k,v})).sort((a,b)=>b.v-a.v).slice(0,top);}
 function grpAmt(arr,key,top=8){const m={};arr.forEach(r=>{if(r[key])m[r[key]]=(m[r[key]]||0)+(r.amount||0);});return Object.entries(m).map(([k,v])=>({k,v})).sort((a,b)=>b.v-a.v).slice(0,top);}
 
-const gridColor = "rgba(46,37,24,0.8)";
+const gridColor = "rgba(0, 0, 0, 0.1)"; // Light gray lines instead of dark
 const tooltipStyle = {
   backgroundColor:"#1a1510",borderColor:"#2e2518",borderWidth:1,
   titleColor:"#c8973a",bodyColor:"#f0e8d8",
