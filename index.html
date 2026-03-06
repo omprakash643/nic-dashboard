@@ -323,10 +323,30 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 /* ─── CHARTS GRID ───────────────────────────────────────────────────── */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 Equal columns like Power BI */
-  grid-auto-rows: 320px; /* Forces all cards in a row to have same height */
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 300px; /* Forces all chart boxes to be the same height */
   gap: 16px;
-  width: 100%;
+  margin-bottom: 24px;
+}
+.overview-tables-container {
+  display: flex;
+  gap: 16px;
+  align-items: stretch; /* Forces both tables to have the same height */
+}
+.overview-tables-container .table-card {
+  flex: 1; /* Makes them share space equally */
+  min-width: 0; /* Prevents tables from breaking the layout */
+  height: 500px; /* Fixed height like Power BI */
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+.table-wrap {
+  flex: 1;
+  overflow-y: auto; /* Internal scrolling so the page doesn't get long */
+  border: 1px solid #f3f4f6;
 }
 .chart-card {
   background: #ffffff;
@@ -550,8 +570,26 @@ footer{
 
   <!-- ═══ OVERVIEW TAB ══════════════════════════════════════════════ -->
   <div class="tab-panel active" id="panel-overview">
-    <div class="charts-grid">
-        </div>
+  
+  <div class="charts-grid">
+    </div>
+
+  <div class="overview-tables-container">
+    
+    <div class="table-card">
+      <div id="tbl-activity-top" class="table-header"></div>
+      <div class="table-wrap"><table id="tbl-activity"></table></div>
+      <div class="pager" id="pg-activity"></div>
+    </div>
+
+    <div class="table-card">
+      <div id="tbl-sales-top" class="table-header"></div>
+      <div class="table-wrap"><table id="tbl-sales"></table></div>
+      <div class="pager" id="pg-sales"></div>
+    </div>
+
+  </div>
+</div>
 
     <div class="tables-row" style="margin-top: 20px;">
         <div class="table-card">
