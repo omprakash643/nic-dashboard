@@ -5,6 +5,19 @@ import {
 } from "recharts";
 import { useSheetTab, transformVisitors, transformLeads, transformSales } from "./useSheetData";
 
+/* ══════════════════════════════════════════════════════════════════
+   GOOGLE SHEETS CONFIG
+   ══════════════════════════════════════════════════════════════════
+   HOW TO SET UP:
+   1. Open your Google Sheet
+   2. Go to File → Share → Publish to web
+   3. For each tab: select the tab name, choose "Comma-separated values (.csv)", click Publish
+   4. Copy the URL and paste it below for each sheet tab
+
+   Example URL format:
+   https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/pub?gid=SHEET_GID&single=true&output=csv
+   ══════════════════════════════════════════════════════════════════ */
+
 const SHEET_URLS = {
   visitors: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=0&single=true&output=csv",
   leads:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=2066525621&single=true&output=csv",
@@ -226,32 +239,19 @@ export default function Dashboard() {
   // Use live data if available, else fall back to static
   const VISITORS = useMemo(() =>
     isLive && rawVisitors.length > 0
-      ? rawVisitors.map(r => ({
-          date: r.date||"", leadType: r.leadType||r["Lead Type"]||"",
-          user: r.user||"", customer: r.customer||"", contact: r.contact||"",
-          state: r.state||"", city: r.city||"", existing: r.existing||"", remarks: r.remarks||""
-        }))
+      ? transformVisitors(rawVisitors)
       : STATIC_VISITORS,
   [isLive, rawVisitors]);
 
   const LEADS = useMemo(() =>
     isLive && rawLeads.length > 0
-      ? rawLeads.map(r => ({
-          date: r.date||"", uqn: r.uqn||"", source: r.source||"", user: r.user||"",
-          customer: r.customer||"", contact: r.contact||"", mobile: r.mobile||"",
-          remarks: r.remarks||"", state: r.state||"",
-          leadType: r.leadType||r["Lead Type"]||"", stage: r.stage||""
-        }))
+      ? transformLeads(rawLeads)
       : STATIC_LEADS,
   [isLive, rawLeads]);
 
   const SALES_DATA = useMemo(() =>
     isLive && rawSales.length > 0
-      ? rawSales.map(r => ({
-          date: r.date||"", customer: r.customer||"", user: r.user||"",
-          leadType: r.leadType||r["Lead Type"]||"",
-          amount: parseFloat(r.amount||"0")||0, state: r.state||""
-        }))
+      ? transformSales(rawSales)
       : STATIC_SALES,
   [isLive, rawSales]);
 
