@@ -7,124 +7,84 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-/* ─── RESET & BASE ──────────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:14px;}
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Outfit', sans-serif;
-  /* Removed dark gradients */
-}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;}
 ::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:#13100d;}
-::-webkit-scrollbar-thumb{background:#4a3d28;border-radius:4px;}
-::-webkit-scrollbar-thumb:hover{background:#c8973a;}
+::-webkit-scrollbar-track{background:#f0e8d8;}
+::-webkit-scrollbar-thumb{background:#c8973a;border-radius:4px;}
 
-/* ─── CSS VARIABLES ─────────────────────────────────────────────────── */
-:root {
-  --bg:       #f7f2e0; /* The light beige from your Power BI bg */
-  --surface:  #e6d5b0; /* Gold headers/filters */
-  --card:     #ffffff; /* Clean white cards */
-  --border:   #d1c4a1;
-  --text:     #2a261f; /* Dark text for readability */
-  --gold:     #b8860b;
-  --cyan:     #00aed9; /* Bright Power BI blue */
-  --green:    #48c78e; /* Bright Power BI green */
-  --violet:   #9b59b6;
-  --orange:   #f39c12;
+:root{
+  --bg:#f7f2e0;
+  --surface:#e6d5b0;
+  --card:#ffffff;
+  --border:#d1c4a1;
+  --text:#2a261f;
+  --gold:#b8860b;
+  --cyan:#00aed9;
+  --green:#48c78e;
+  --violet:#9b59b6;
+  --orange:#f39c12;
+  --sub:#6b7280;
+  --dim:#9ca3af;
+  --rose:#e05a6a;
 }
 
-/* ─── TYPOGRAPHY ────────────────────────────────────────────────────── */
 .serif{font-family:'Cormorant Garamond',serif;}
 
-/* ─── ANIMATIONS ────────────────────────────────────────────────────── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 @keyframes shimmer{0%,100%{opacity:.6;}50%{opacity:1;}}
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes zoomSelect{0%{transform:scale(1);}50%{transform:scale(1.12);}100%{transform:scale(1);}}
+@keyframes activeShake{0%{transform:rotate(0deg);}25%{transform:rotate(1deg);}50%{transform:rotate(0deg);}75%{transform:rotate(-1deg);}100%{transform:rotate(0deg);}}
 .fade-up{animation:fadeUp .5s ease both;}
 .spin{animation:spin 1s linear infinite;display:inline-block;}
 
-/* ─── HEADER ────────────────────────────────────────────────────────── */
-header {
-  background: #ffffff; /* Solid white background */
-  border-bottom: 2px solid var(--border); /* Beige border to match your theme */
-  padding: 0 24px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Softer, subtle shadow */
+/* HEADER */
+header{
+  background:#ffffff;
+  border-bottom:2px solid var(--border);
+  padding:0 24px;
+  height:64px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  position:sticky;
+  top:0;
+  z-index:200;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
 }
-/* ─── LOGO AREA ─────────────────────────────────────────────────────── */
-/* 
-  ╔══════════════════════════════════════════════════════════════╗
-  ║  HOW TO ADD YOUR LOGO:                                       ║
-  ║                                                              ║
-  ║  Option A — Image file (easiest):                            ║
-  ║  1. Upload your logo to the same folder as this HTML file    ║
-  ║  2. Name it: logo.png  (or logo.jpg, logo.svg)              ║
-  ║  3. Replace the SVG inside #logo-slot with:                  ║
-  ║     <img src="logo.png" alt="NICPL" style="height:46px;      ║
-  ║            width:46px; object-fit:contain; border-radius:8px;║
-  ║            background:#111;padding:2px;">                    ║
-  ║                                                              ║
-  ║  Option B — Hosted URL:                                      ║
-  ║  Replace the SVG with:                                       ║
-  ║  <img src="YOUR_LOGO_URL" style="height:46px;width:46px;     ║
-  ║         object-fit:contain;">                                ║
-  ╚══════════════════════════════════════════════════════════════╝
-*/
-#logo-slot {
-  width: 46px; height: 46px; flex-shrink: 0;
-  border-radius: 10px;
-  background: #f8f9fa; /* Very light gray/white background */
-  border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
+#logo-slot{
+  width:46px;height:46px;flex-shrink:0;
+  border-radius:10px;
+  background:#f8f9fa;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
 }
-
-.brand-divider{
-  border-left:1px solid var(--border);
-  padding-left:14px;
-}
-.brand-name{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:700; font-size:19px;
-  color:var(--text); letter-spacing:.04em; line-height:1;
-}
-.brand-sub{
-  font-size:9px; color:var(--gold); letter-spacing:.22em;
-  margin-top:3px; font-weight:600;
-}
-
+.brand-divider{border-left:1px solid var(--border);padding-left:14px;}
+.brand-name{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:19px;color:var(--text);letter-spacing:.04em;line-height:1;}
+.brand-sub{font-size:9px;color:var(--gold);letter-spacing:.22em;margin-top:3px;font-weight:600;}
 .spacer{flex:1;}
-
-/* Sync badge */
 #sync-badge{display:flex;align-items:center;gap:10px;font-size:11px;}
 #sync-text{color:var(--green);}
 .btn-refresh{
   background:linear-gradient(135deg,rgba(200,151,58,.22),rgba(200,151,58,.08));
   border:1px solid rgba(200,151,58,.5);
-  color:var(--gold); border-radius:8px;
-  padding:5px 16px; cursor:pointer; font-size:11px;
-  font-family:'Outfit',sans-serif; font-weight:600; letter-spacing:.08em;
+  color:var(--gold);border-radius:8px;
+  padding:5px 16px;cursor:pointer;font-size:11px;
+  font-family:'Outfit',sans-serif;font-weight:600;letter-spacing:.08em;
   transition:all .15s;
 }
 .btn-refresh:hover{background:rgba(200,151,58,.3);}
-
-/* Tabs */
 .tabs{display:flex;gap:4px;margin-left:8px;}
 .tab-btn{
   background:transparent;
   border:1px solid var(--border);
-  color:var(--sub); border-radius:9px;
-  padding:5px 16px; cursor:pointer;
-  font-size:11px; font-family:'Outfit',sans-serif; font-weight:600;
-  letter-spacing:.05em; transition:all .15s;
+  color:var(--sub);border-radius:9px;
+  padding:5px 16px;cursor:pointer;
+  font-size:11px;font-family:'Outfit',sans-serif;font-weight:600;
+  letter-spacing:.05em;transition:all .15s;
 }
 .tab-btn:hover{background:rgba(200,151,58,.12);}
 .tab-btn.active{
@@ -134,259 +94,96 @@ header {
   box-shadow:0 0 12px rgba(200,151,58,.2);
 }
 
-/* ─── FILTER BAR ────────────────────────────────────────────────────── */
-/* Zoom effect when clicking */
-@keyframes zoomSelect {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+/* FILTER BAR */
+#filter-bar{
+  background:#ffffff;
+  border-bottom:1px solid #e5e7eb;
+  padding:15px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.02);
 }
-
-/* Gentle shake effect for the active filter */
-@keyframes activeShake {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(1deg); }
-  50% { transform: rotate(0deg); }
-  75% { transform: rotate(-1deg); }
-  100% { transform: rotate(0deg); }
+.filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.filter-label{font-size:10px;color:#6b7280;font-weight:700;letter-spacing:.1em;min-width:50px;text-transform:uppercase;}
+.pill{
+  padding:4px 14px;border-radius:6px;
+  border:1px solid #d1d5db;background:#f9fafb;
+  color:#374151;font-size:11px;font-family:'Outfit',sans-serif;font-weight:500;
+  cursor:pointer;transition:all .2s;
 }
-#filter-bar {
-  background: #ffffff; /* Matches your white header */
-  border-bottom: 1px solid #e5e7eb; /* Soft light gray border */
-  padding: 15px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Very subtle shadow */
+.pill:hover{background:#f3f4f6;border-color:var(--gold);}
+.pill:active{animation:zoomSelect 0.3s ease-out;}
+.pill.active-cyan{border-color:#00aed9;background:#e0f2fe;color:#00aed9;animation:activeShake 0.4s ease-in-out infinite;}
+.pill.active-violet{border-color:#9b59b6;background:#f5f3ff;color:#9b59b6;animation:activeShake 0.4s ease-in-out infinite;}
+.pill.active-green{border-color:#48c78e;background:#ecfdf5;color:#065f46;animation:activeShake 0.4s ease-in-out infinite;}
+input[type="date"]{
+  background:#ffffff;border:1px solid #d1d5db;border-radius:6px;
+  color:#374151;padding:4px 10px;font-size:11px;color-scheme:light;
 }
-.filter-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.filter-label {
-  font-size: 10px;
-  color: #6b7280; /* Neutral gray label */
-  font-weight: 700;
-  letter-spacing: .1em;
-  min-width: 50px;
-  text-transform: uppercase;
-}
-.pill {
-  padding: 4px 14px;
-  border-radius: 6px; /* Slightly more square like Power BI */
-  border: 1px solid #d1d5db; /* Light gray border */
-  background: #f9fafb; /* Very light gray background */
-  color: #374151; /* Dark gray text */
-  font-size: 11px;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 500;
-  cursor: pointer;
-  /* ... keep your existing styles ... */
-  transition: all .2s;
-}
-.pill:hover {
-  background: #f3f4f6;
-  border-color: var(--gold);
-  transform: none; /* Removed the lift effect for a flatter Power BI look */
-}
-.pill:active {
-  animation: zoomSelect 0.3s ease-out;
-}
-.pill.active-cyan {
-  border-color: #00aed9;
-  background: #e0f2fe;
-  color: #00aed9;
-  animation: activeShake 0.4s ease-in-out infinite
-}
-.pill.active-violet {
-  border-color: #9b59b6;
-  background: #f5f3ff;
-  color: #9b59b6;
-  animation: activeShake 0.4s ease-in-out infinite
-}
-.pill.active-green {
-  border-color: #48c78e;
-  background: #ecfdf5;
-  color: #065f46;
-  animation: activeShake 0.4s ease-in-out infinite
-}
-input[type="date"] {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  color: #374151;
-  padding: 4px 10px;
-  font-size: 11px;
-  color-scheme: light; /* Forces white calendar popup */
-}
-input[type="date"]::-webkit-calendar-picker-indicator{
-  filter:invert(.6) sepia(1) saturate(3) hue-rotate(5deg); cursor:pointer;
-}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6) sepia(1) saturate(3) hue-rotate(5deg);cursor:pointer;}
 .btn-reset{
-  padding:3px 12px; border-radius:20px;
+  padding:3px 12px;border-radius:20px;
   border:1px solid rgba(212,105,122,.5);
-  background:rgba(212,105,122,.1); color:var(--rose);
-  font-size:11px; cursor:pointer;
-  font-family:'Outfit',sans-serif; font-weight:600;
-  margin-left:8px;
+  background:rgba(212,105,122,.1);color:var(--rose);
+  font-size:11px;cursor:pointer;
+  font-family:'Outfit',sans-serif;font-weight:600;margin-left:8px;
 }
 
-/* ─── MAIN CONTENT ──────────────────────────────────────────────────── */
-#main {
-  padding: 20px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px; /* Uniform distance between sections */
-  max-width: 1600px; /* Prevents stretching on ultra-wide screens */
-  margin: 0 auto;
-}
+/* MAIN */
+#main{padding:20px 24px;display:flex;flex-direction:column;gap:24px;max-width:1600px;margin:0 auto;}
 
-/* ─── KPI CARDS ─────────────────────────────────────────────────────── */
-.kpi-row {
-  display: flex;
-  gap: 20px; /* Increased distance between cards */
-  flex-wrap: wrap;
-  padding: 10px 0;
-  perspective: 1000px; /* Needed for 3D effects */
+/* KPI CARDS */
+.kpi-row{display:flex;gap:20px;flex-wrap:wrap;padding:10px 0;}
+.kpi-card{
+  flex:1;min-width:200px;
+  background:#ffffff;
+  border:1px solid #e5e7eb;
+  border-top:6px solid var(--accent-color);
+  border-radius:12px;
+  padding:24px 20px;
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+  min-height:140px;
+  transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  box-shadow:0 10px 20px rgba(0,0,0,0.08),0 6px 6px rgba(0,0,0,0.1);
 }
-.kpi-card {
-  flex: 1;
-  min-width: 200px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-top: 6px solid var(--accent-color); /* Thicker top accent */
-  border-radius: 12px;
-  padding: 24px 20px;
-  position: relative;
-  overflow: hidden;
-  
-  /* The "Coming Out" 3D Effect */
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 
-    0 10px 20px rgba(0,0,0,0.08), 
-    0 6px 6px rgba(0,0,0,0.1); /* Layered shadows for depth */
-.kpi-value {
-  color: #1a1a1a; /* Sharp black text */
-  text-shadow: none; /* Remove the glow/shadow */
-  font-size: 32px !important;
-}
-.kpi-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Aligns content vertically in middle */
-  align-items: flex-start;
-  min-height: 140px;
-}
-.kpi-card:hover {
-  transform: translateY(-10px) translateZ(20px); /* Moves up and "toward" user */
-  box-shadow: 
-    0 20px 30px rgba(0,0,0,0.12), 
-    0 15px 15px rgba(0,0,0,0.08);
-  border-color: var(--accent-color);
-}
-.kpi-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--accent-color,var(--gold));
-  opacity:.7;
-}
-.kpi-card::after{
-  content:'';position:absolute;top:0;right:0;width:80px;height:80px;
-  background:radial-gradient(circle at top right,rgba(var(--accent-rgb,.2),0.18),transparent 70%);
-  pointer-events:none;
-}
-.kpi-icon{
-  position:absolute;bottom:-4px;right:10px;
-  font-size:48px;opacity:.06;line-height:1;user-select:none;
-}
-.kpi-label {
-  color: #6b7280;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-.kpi-value {
-  color: #111827 !important; /* Sharp black */
-  text-shadow: none !important;
-  font-size: 36px !important;
-  font-weight: 800 !important;
-  font-family: 'Outfit', sans-serif !important;
-  margin: 8px 0;
-}
-.kpi-card:hover .kpi-value{filter:brightness(1.2);}
+.kpi-card:hover{transform:translateY(-10px);box-shadow:0 20px 30px rgba(0,0,0,0.12),0 15px 15px rgba(0,0,0,0.08);border-color:var(--accent-color);}
+.kpi-card::after{content:'';position:absolute;top:0;right:0;width:80px;height:80px;background:radial-gradient(circle at top right,rgba(var(--accent-rgb),.2),transparent 70%);pointer-events:none;}
+.kpi-icon{position:absolute;bottom:-4px;right:10px;font-size:48px;opacity:.06;line-height:1;user-select:none;}
+.kpi-label{color:#6b7280;font-weight:700;letter-spacing:.05em;font-size:11px;text-transform:uppercase;}
+.kpi-value{color:#111827;font-size:36px;font-weight:800;font-family:'Outfit',sans-serif;margin:8px 0;}
 .kpi-sub{font-size:10px;color:var(--sub);letter-spacing:.04em;}
-.kpi-bottom-line{
-  position:absolute;bottom:0;left:16px;right:16px;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),0.3),transparent);
-}
+.kpi-bottom-line{position:absolute;bottom:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(200,151,58,0.3),transparent);}
 
-/* ─── CHARTS GRID ───────────────────────────────────────────────────── */
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 300px; /* Forces all chart boxes to be the same height */
-  gap: 16px;
-  margin-bottom: 24px;
+/* CHARTS GRID */
+.charts-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
 }
-.overview-tables-container {
-  display: flex;
-  gap: 16px;
-  align-items: stretch; /* Forces both tables to have the same height */
+.chart-card{
+  background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;
+  padding:15px;box-shadow:0 2px 4px rgba(0,0,0,0.05);
+  display:flex;flex-direction:column;
+  height:300px;
 }
-.overview-tables-container .table-card {
-  flex: 1; /* Makes them share space equally */
-  min-width: 0; /* Prevents tables from breaking the layout */
-  height: 500px; /* Fixed height like Power BI */
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
+.chart-title{
+  font-size:11px;color:#374151;font-weight:700;
+  margin-bottom:15px;border-bottom:1px solid #f3f4f6;padding-bottom:8px;
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
 }
-.table-wrap {
-  flex: 1;
-  overflow-y: auto; /* Internal scrolling so the page doesn't get long */
-  border: 1px solid #f3f4f6;
-}
-.chart-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px; /* Sharper corners like Power BI */
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  display: flex;
-  flex-direction: column;
-}
-.chart-card::before {
-  display: none;
-}
-.chart-title {
-  font-size: 11px;
-  color: #374151;
-  font-weight: 700;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #f3f4f6;
-  padding-bottom: 8px;
-}
-.chart-title-bar{
-  width:2px;height:12px;
-  background:linear-gradient(180deg,var(--gold-hi),rgba(200,151,58,.5));
-  border-radius:1px;display:inline-block;flex-shrink:0;
-}
-.chart-wrap{position:relative;height:200px;}
+.chart-title-bar{width:2px;height:12px;background:linear-gradient(180deg,var(--gold),rgba(200,151,58,.5));border-radius:1px;display:inline-block;flex-shrink:0;}
+.chart-wrap{position:relative;flex:1;min-height:0;}
 
-/* ─── DATA TABLE ────────────────────────────────────────────────────── */
-.table-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 15px;
-  height: 500px; /* Fixed height for consistency */
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+/* TABLE CARDS */
+.table-card{
+  background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;
+  padding:15px;
+  display:flex;flex-direction:column;
+  min-height:400px;max-height:600px;
 }
-.table-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.table-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;flex-shrink:0;}
 .table-title{
   font-size:10px;font-weight:700;letter-spacing:.16em;
   text-transform:uppercase;font-family:'Outfit',sans-serif;
@@ -395,116 +192,80 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 .table-title-bar{width:2px;height:14px;border-radius:1px;display:inline-block;}
 .table-count{color:var(--dim);font-weight:500;}
 .search-input{
-  background: #f9fafb;border:1px solid var(--border);border: 1px solid #d1d5db;
-  color: #111827;padding:6px 14px;font-size:11px;
+  background:#f9fafb;border:1px solid #d1d5db;border-radius:6px;
+  color:#111827;padding:6px 14px;font-size:11px;
   font-family:'Outfit',sans-serif;outline:none;width:220px;margin-left:auto;
 }
-.tables-row {
-  display: grid;
-  grid-template-columns: 2fr 1.2fr; /* Power BI style: Main Log and side Sales */
-  gap: 16px;
-  align-items: start;
-}
-table-wrap {
-  flex: 1;
-  overflow-y: auto; /* Scroll inside the table, not the whole page */
-  border: 1px solid #f3f4f6;
-}
+.search-input:focus{border-color:var(--gold);}
+.table-wrap{flex:1;overflow-y:auto;overflow-x:auto;min-height:0;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
-thead tr{background: #f3f4f6;(180deg,#201e14,#181610);}
+thead tr{background:#f9fafb;position:sticky;top:0;z-index:1;}
 th{
   padding:10px 14px;text-align:left;font-weight:700;
-  color: #4b5563 !important;
-  border-bottom:1px solid var(--border);
+  color:#4b5563;border-bottom:2px solid #e5e7eb;
   font-family:'Outfit',sans-serif;font-size:9px;
   letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
   cursor:pointer;user-select:none;
 }
-th:hover{opacity:.8;}
+th:hover{background:#f3f4f6;}
 td{
   padding:9px 14px;font-family:'Outfit',sans-serif;
-  color: #1f2937 !important;
-  border-bottom: 1px solid #f3f4f6;
+  color:#1f2937;border-bottom:1px solid #f3f4f6;
   letter-spacing:.02em;white-space:nowrap;
   max-width:240px;overflow:hidden;text-overflow:ellipsis;
-  border-bottom:1px solid rgba(46,37,24,.3);
 }
-.trow:hover{background:rgba(200,151,58,.05)!important;}
-.pager{display:flex;gap:8px;justify-content:center;align-items:center;}
+.trow:hover{background:rgba(200,151,58,0.05)!important;}
+.pager{display:flex;gap:8px;justify-content:center;align-items:center;padding-top:10px;flex-shrink:0;}
 .btn-page{
   background:none;border:1px solid var(--border);color:var(--sub);
   border-radius:8px;padding:4px 16px;cursor:pointer;font-size:11px;
-  font-family:'Outfit',sans-serif;font-weight:600;
+  font-family:'Outfit',sans-serif;font-weight:600;transition:all .15s;
 }
+.btn-page:hover:not(:disabled){background:rgba(200,151,58,.12);border-color:var(--gold);}
 .btn-page:disabled{opacity:.3;cursor:default;}
 .page-info{color:var(--gold);font-size:12px;font-family:'Cormorant Garamond',serif;font-weight:600;}
 
-/* ─── FOOTER ────────────────────────────────────────────────────────── */
-footer{
-  text-align:center;padding:16px 24px;
-  border-top:1px solid var(--border);
-  color:var(--dim);font-size:10px;letter-spacing:.12em;
-  font-family:'Outfit',sans-serif;
-}
-
-/* ─── TAB PANELS ────────────────────────────────────────────────────── */
+/* TAB PANELS */
 .tab-panel{display:none;}
-.tab-panel.active{display:block;}
+.tab-panel.active{display:flex;flex-direction:column;gap:24px;}
 
-/* ─── RESPONSIVE ────────────────────────────────────────────────────── */
+/* FOOTER */
+footer{text-align:center;padding:16px 24px;border-top:1px solid var(--border);color:var(--dim);font-size:10px;letter-spacing:.12em;font-family:'Outfit',sans-serif;}
+
+/* RESPONSIVE */
 @media(max-width:1100px){.charts-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:700px){.charts-grid{grid-template-columns:1fr;}.kpi-card{min-width:140px;}}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  HEADER                                                             -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- HEADER -->
 <header>
-
-  <!-- 
-    ┌─────────────────────────────────────────────────────────────────┐
-    │  LOGO SLOT — Replace the SVG below with your image tag          │
-    │                                                                 │
-    │  If your logo file is named "logo.png" in same folder:          │
-    │  <img src="logo.png" alt="NICPL"                                │
-    │       style="height:46px;width:46px;object-fit:contain;         │
-    │              border-radius:8px;background:#111;padding:2px">    │
-    │                                                                 │
-    │  Or paste a full URL to your logo image here                    │
-    └─────────────────────────────────────────────────────────────────┘
-  -->
- <div id="logo-slot">
-  <img src="WhatsApp Image 2026-02-18 at 2.26.58 PM (1).jpeg" 
-       alt="NICPL Logo" 
-       style="height:44px; width:44px; object-fit:contain; border-radius:6px;">
-</div>
-
+  <div id="logo-slot">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="6" fill="#1a1510"/>
+      <text x="16" y="22" text-anchor="middle" fill="#c8973a" font-family="serif" font-size="14" font-weight="bold">N</text>
+    </svg>
+  </div>
   <div class="brand-divider">
     <div class="brand-name">North India Compressors</div>
     <div class="brand-sub">SALES INTELLIGENCE DASHBOARD · JAN–FEB 2026</div>
   </div>
-
   <div class="spacer"></div>
-
   <div id="sync-badge">
     <span id="sync-text">⟳ Loading…</span>
     <button class="btn-refresh" onclick="loadAllSheets()">↺ REFRESH</button>
   </div>
-
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('overview')" id="tab-overview">◈ Overview</button>
-    <button class="tab-btn" onclick="switchTab('leads')"    id="tab-leads">◎ Leads</button>
-    <button class="tab-btn" onclick="switchTab('sales')"    id="tab-sales">◆ Sales</button>
+    <button class="tab-btn" onclick="switchTab('leads')" id="tab-leads">◎ Leads</button>
+    <button class="tab-btn" onclick="switchTab('sales')" id="tab-sales">◆ Sales</button>
     <button class="tab-btn" onclick="switchTab('visitors')" id="tab-visitors">◉ Visitors</button>
     <button class="tab-btn" onclick="switchTab('activity')" id="tab-activity">≡ Activity Log</button>
   </div>
 </header>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  FILTER BAR                                                         -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- FILTER BAR -->
 <div id="filter-bar">
   <div class="filter-row">
     <span class="filter-label">DATE</span>
@@ -524,206 +285,218 @@ footer{
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  MAIN CONTENT                                                       -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- MAIN CONTENT -->
 <div id="main">
 
-  <!-- KPIs -->
+  <!-- KPI ROW (always visible) -->
   <div class="kpi-row" id="kpi-row">
-    <div class="kpi-card fade-up" style="--accent-color:#4db8d4;--accent-rgb:77,184,212;" data-delay="0">
+    <div class="kpi-card fade-up" style="--accent-color:#4db8d4;--accent-rgb:77,184,212;">
       <div class="kpi-icon">👥</div>
       <div class="kpi-label">Total Visitors</div>
-      <div class="kpi-value" id="kpi-visitors" style="font-size:42px;color:#4db8d4;">—</div>
+      <div class="kpi-value" id="kpi-visitors" style="color:#4db8d4;">—</div>
       <div class="kpi-sub" id="kpi-visitors-sub">customer visits recorded</div>
       <div class="kpi-bottom-line"></div>
     </div>
-    <div class="kpi-card fade-up" style="--accent-color:#9b7fd4;--accent-rgb:155,127,212;" data-delay="70">
+    <div class="kpi-card fade-up" style="--accent-color:#9b7fd4;--accent-rgb:155,127,212;">
       <div class="kpi-icon">🎯</div>
       <div class="kpi-label">Total Leads</div>
-      <div class="kpi-value" id="kpi-leads" style="font-size:42px;color:#9b7fd4;">—</div>
+      <div class="kpi-value" id="kpi-leads" style="color:#9b7fd4;">—</div>
       <div class="kpi-sub" id="kpi-leads-sub">— hot leads</div>
       <div class="kpi-bottom-line"></div>
     </div>
-    <div class="kpi-card fade-up" style="--accent-color:#5cba8a;--accent-rgb:92,186,138;" data-delay="140">
+    <div class="kpi-card fade-up" style="--accent-color:#5cba8a;--accent-rgb:92,186,138;">
       <div class="kpi-icon">✅</div>
       <div class="kpi-label">Total Sales</div>
-      <div class="kpi-value" id="kpi-sales" style="font-size:42px;color:#5cba8a;">—</div>
+      <div class="kpi-value" id="kpi-sales" style="color:#5cba8a;">—</div>
       <div class="kpi-sub">orders confirmed</div>
       <div class="kpi-bottom-line"></div>
     </div>
-    <div class="kpi-card fade-up" style="--accent-color:#d4aa38;--accent-rgb:212,170,56;" data-delay="210">
+    <div class="kpi-card fade-up" style="--accent-color:#d4aa38;--accent-rgb:212,170,56;">
       <div class="kpi-icon">📄</div>
       <div class="kpi-label">Quotations Sent</div>
-      <div class="kpi-value" id="kpi-quot" style="font-size:42px;color:#d4aa38;">—</div>
+      <div class="kpi-value" id="kpi-quot" style="color:#d4aa38;">—</div>
       <div class="kpi-sub">Hot Lead + Quot. Send</div>
       <div class="kpi-bottom-line"></div>
     </div>
-    <div class="kpi-card fade-up" style="--accent-color:#c8973a;--accent-rgb:200,151,58;" data-delay="280">
+    <div class="kpi-card fade-up" style="--accent-color:#c8973a;--accent-rgb:200,151,58;">
       <div class="kpi-icon">💰</div>
       <div class="kpi-label">Total Revenue</div>
-      <div class="kpi-value" id="kpi-rev" style="font-size:28px;color:#c8973a;">—</div>
+      <div class="kpi-value" id="kpi-rev" style="color:#c8973a;font-size:28px;">—</div>
       <div class="kpi-sub" id="kpi-rev-sub">avg per sale</div>
       <div class="kpi-bottom-line"></div>
     </div>
   </div>
 
-  <!-- ═══ OVERVIEW TAB ══════════════════════════════════════════════ -->
+  <!-- ═══ OVERVIEW TAB ═══ -->
   <div class="tab-panel active" id="panel-overview">
-  
-  <div class="charts-grid">
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title"><span class="chart-title-bar"></span>Lead Source — Count</div>
+        <div class="chart-wrap"><canvas id="ch-source"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="chart-title-bar"></span>Lead Pipeline</div>
+        <div class="chart-wrap"><canvas id="ch-pipeline"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="chart-title-bar"></span>State Sales — Revenue</div>
+        <div class="chart-wrap"><canvas id="ch-state-rev"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="chart-title-bar"></span>User Sales — Revenue</div>
+        <div class="chart-wrap"><canvas id="ch-user-rev"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="chart-title-bar"></span>User Sales — Count</div>
+        <div class="chart-wrap"><canvas id="ch-user-cnt"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="chart-title-bar"></span>Lead Type Sales — Count</div>
+        <div class="chart-wrap"><canvas id="ch-type-cnt"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="chart-title-bar"></span>Competitors (Visit)</div>
+        <div class="chart-wrap"><canvas id="ch-comp"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="chart-title-bar"></span>Visitors by User</div>
+        <div class="chart-wrap"><canvas id="ch-vis-user"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="chart-title-bar"></span>State Sales — Count</div>
+        <div class="chart-wrap"><canvas id="ch-state-cnt"></canvas></div>
+      </div>
     </div>
 
-  <div class="overview-tables-container">
-    
+    <!-- Overview Activity Table -->
     <div class="table-card">
-      <div id="tbl-activity-top" class="table-header"></div>
+      <div class="table-header" id="tbl-activity-top"></div>
       <div class="table-wrap"><table id="tbl-activity"></table></div>
       <div class="pager" id="pg-activity"></div>
     </div>
 
+    <!-- Overview Sales Table -->
     <div class="table-card">
-      <div id="tbl-sales-top" class="table-header"></div>
+      <div class="table-header" id="tbl-sales-top"></div>
       <div class="table-wrap"><table id="tbl-sales"></table></div>
       <div class="pager" id="pg-sales"></div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /panel-overview -->
 
-    <div class="tables-row" style="margin-top: 20px;">
-        <div class="table-card">
-            <div class="table-title">Lead & Visitor Log</div>
-            <div class="table-wrap"><table id="tbl-activity-overview"></table></div>
-        </div>
-        <div class="table-card">
-            <div class="table-title">Recent Sales</div>
-            <div class="table-wrap"><table id="tbl-sales-overview"></table></div>
-        </div>
-    </div>
-</div>
-    <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Lead Source — Count</div><div class="chart-wrap"><canvas id="ch-source"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Lead Pipeline</div><div class="chart-wrap"><canvas id="ch-pipeline"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>State Sales — Revenue</div><div class="chart-wrap"><canvas id="ch-state-rev"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>User Sales — Revenue</div><div class="chart-wrap"><canvas id="ch-user-rev"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>User Sales — Count</div><div class="chart-wrap"><canvas id="ch-user-cnt"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Lead Type Sales — Count</div><div class="chart-wrap"><canvas id="ch-type-cnt"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Competitors (Visit)</div><div class="chart-wrap"><canvas id="ch-comp"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>Visitors by User</div><div class="chart-wrap"><canvas id="ch-vis-user"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title"><span class="chart-title-bar"></span>State Sales — Count</div><div class="chart-wrap"><canvas id="ch-state-cnt"></canvas></div></div>
-    </div>
-  </div>
-
-  <!-- ═══ OTHER TAB PANELS ══════════════════════════════════════════ -->
+  <!-- ═══ LEADS TAB ═══ -->
   <div class="tab-panel" id="panel-leads">
     <div class="table-card">
-      <div id="tbl-leads-top" class="table-header"></div>
+      <div class="table-header" id="tbl-leads-top"></div>
       <div class="table-wrap"><table id="tbl-leads"></table></div>
       <div class="pager" id="pg-leads"></div>
     </div>
   </div>
+
+  <!-- ═══ SALES TAB ═══ -->
   <div class="tab-panel" id="panel-sales">
     <div class="table-card">
-      <div id="tbl-sales-top" class="table-header"></div>
-      <div class="table-wrap"><table id="tbl-sales"></table></div>
-      <div class="pager" id="pg-sales"></div>
+      <div class="table-header" id="tbl-sales2-top"></div>
+      <div class="table-wrap"><table id="tbl-sales2"></table></div>
+      <div class="pager" id="pg-sales2"></div>
     </div>
   </div>
+
+  <!-- ═══ VISITORS TAB ═══ -->
   <div class="tab-panel" id="panel-visitors">
     <div class="table-card">
-      <div id="tbl-visitors-top" class="table-header"></div>
+      <div class="table-header" id="tbl-visitors-top"></div>
       <div class="table-wrap"><table id="tbl-visitors"></table></div>
       <div class="pager" id="pg-visitors"></div>
     </div>
   </div>
+
+  <!-- ═══ ACTIVITY LOG TAB ═══ -->
   <div class="tab-panel" id="panel-activity">
     <div class="table-card">
-      <div id="tbl-activity-top" class="table-header"></div>
-      <div class="table-wrap"><table id="tbl-activity"></table></div>
-      <div class="pager" id="pg-activity"></div>
+      <div class="table-header" id="tbl-activity2-top"></div>
+      <div class="table-wrap"><table id="tbl-activity2"></table></div>
+      <div class="pager" id="pg-activity2"></div>
     </div>
   </div>
 
-</div>
+</div><!-- /main -->
+
 <footer>NORTH INDIA COMPRESSORS PVT LTD — SALES INTELLIGENCE PLATFORM © 2026</footer>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  JAVASCRIPT                                                         -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <script>
-/* ─── SHEET URLS ──────────────────────────────────────────────── */
+/* ─── SHEET URLS ─── */
 const SHEET_URLS = {
   visitors: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=0&single=true&output=csv",
   leads:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=2066525621&single=true&output=csv",
   sales:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=23552387&single=true&output=csv",
 };
 
-const PALETTE = ["#00aed9", "#48c78e", "#f1b434", "#e84c3d", "#9b59b6", "#34495e"];
-const norm = v => String(v||"").trim().toUpperCase();
+const PALETTE = ["#00aed9","#48c78e","#f1b434","#e84c3d","#9b59b6","#34495e","#f39c12","#1abc9c"];
+
+function norm(v){return String(v||"").trim().toUpperCase();}
 function fmt(n){if(!n)return"₹0";if(n>=1e7)return`₹${(n/1e7).toFixed(2)} Cr`;if(n>=1e5)return`₹${(n/1e5).toFixed(1)} L`;if(n>=1e3)return`₹${(n/1e3).toFixed(0)}K`;return`₹${n}`;}
 function fmtDate(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return d;return dt.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});}
 function toISO(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return"";return dt.toISOString().slice(0,10);}
 
-/* ─── STATE ───────────────────────────────────────────────────── */
-let RAW = { visitors:[], leads:[], sales:[] };
-let selUser="All", selType="All", selState="All";
-let sortState = {};
-let searchState = {};
-let pageState = {};
-const PER = 20;
-const charts = {};
+/* ─── STATE ─── */
+let RAW={visitors:[],leads:[],sales:[]};
+let selUser="All",selType="All",selState="All";
+let sortState={},searchState={},pageState={};
+const PER=20;
+const charts={};
 
-/* ─── CSV PARSER ──────────────────────────────────────────────── */
-function parseCSV(text) {
-  const norm2 = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim();
-  if(!norm2) return [];
-  let i=0;
-  const results=[];
+/* ─── CSV PARSER ─── */
+function parseCSV(text){
+  const t=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim();
+  if(!t)return[];
+  let i=0;const results=[];
   function parseField(){
-    if(norm2[i]==='"'){i++;let v="";while(i<norm2.length){if(norm2[i]==='"'){if(norm2[i+1]==='"'){v+='"';i+=2;}else{i++;break;}}else{v+=norm2[i++];}}return v.trim();}
-    let v="";while(i<norm2.length&&norm2[i]!==","&&norm2[i]!=="\n")v+=norm2[i++];return v.trim();
+    if(t[i]==='"'){i++;let v="";while(i<t.length){if(t[i]==='"'){if(t[i+1]==='"'){v+='"';i+=2;}else{i++;break;}}else{v+=t[i++];}}return v.trim();}
+    let v="";while(i<t.length&&t[i]!==","&&t[i]!=="\n")v+=t[i++];return v.trim();
   }
-  function parseRow(){const r=[];while(i<norm2.length&&norm2[i]!=="\n"){r.push(parseField());if(i<norm2.length&&norm2[i]===",")i++;}if(norm2[i]==="\n")i++;return r;}
+  function parseRow(){const r=[];while(i<t.length&&t[i]!=="\n"){r.push(parseField());if(i<t.length&&t[i]===",")i++;}if(t[i]==="\n")i++;return r;}
   const headers=parseRow().map(h=>h.trim());
   if(!headers.length)return[];
-  while(i<norm2.length){const vals=parseRow();if(vals.every(v=>v===""))continue;const obj={};headers.forEach((h,idx)=>{obj[h]=vals[idx]??""});results.push(obj);}
+  while(i<t.length){const vals=parseRow();if(vals.every(v=>v===""))continue;const obj={};headers.forEach((h,idx)=>{obj[h]=vals[idx]??""});results.push(obj);}
   return results;
 }
 
-/* ─── TRANSFORMS ──────────────────────────────────────────────── */
+/* ─── TRANSFORMS ─── */
 function transformV(rows){
   return rows.map(r=>({
-    date:r["Date"]?.trim()||"", leadType:norm(r["Lead Type"]), user:norm(r["User"]),
-    customer:r["Customer Name"]?.trim()||"", contact:r["Contact Person"]?.trim()||"",
-    state:norm(r["State"]), city:r["City"]?.trim()||r["CIty"]?.trim()||"",
+    date:r["Date"]?.trim()||"",leadType:norm(r["Lead Type"]),user:norm(r["User"]),
+    customer:r["Customer Name"]?.trim()||"",contact:r["Contact Person"]?.trim()||"",
+    state:norm(r["State"]),city:r["City"]?.trim()||r["CIty"]?.trim()||"",
     competitors:r["Competitors"]?.trim()||r["Mayer Existing Customer"]?.trim()||"",
     remarks:r["Remark"]?.trim()||r["Remarks"]?.trim()||"",
   })).filter(r=>r.date&&r.date!=="Date");
 }
 function transformL(rows){
   return rows.map(r=>({
-    date:r["Date"]?.trim()||"", uqn:r["GST NO."]?.trim()||"",
-    source:r["Source"]?.trim()||"", user:norm(r["User"]),
-    customer:r["Customer Name"]?.trim()||"", contact:r["Contact Person"]?.trim()||"",
-    mobile:r["Mobile"]?.trim()||"", remarks:r["Remark"]?.trim()||r["Remarks"]?.trim()||"",
-    state:norm(r["State"]), leadType:norm(r["Lead Type"]),
+    date:r["Date"]?.trim()||"",uqn:r["GST NO."]?.trim()||"",
+    source:r["Source"]?.trim()||"",user:norm(r["User"]),
+    customer:r["Customer Name"]?.trim()||"",contact:r["Contact Person"]?.trim()||"",
+    mobile:r["Mobile"]?.trim()||"",remarks:r["Remark"]?.trim()||r["Remarks"]?.trim()||"",
+    state:norm(r["State"]),leadType:norm(r["Lead Type"]),
     stage:r["Stage"]?.trim()||"",
   })).filter(r=>r.date&&r.date!=="Date");
 }
 function transformS(rows){
   return rows.map(r=>({
-    date:r["Date"]?.trim()||"", customer:r["Customer"]?.trim()||"",
-    user:norm(r["User"]), leadType:norm(r["Lead Type"]),
+    date:r["Date"]?.trim()||"",customer:r["Customer"]?.trim()||"",
+    user:norm(r["User"]),leadType:norm(r["Lead Type"]),
     amount:parseFloat(String(r["PO Amount"]||r["Amount"]||"0").replace(/[₹,\s]/g,""))||0,
-    state:norm(r["State"]), products:r["Products"]?.trim()||"",
+    state:norm(r["State"]),products:r["Products"]?.trim()||"",
   })).filter(r=>r.date&&r.date!=="Date");
 }
 
-/* ─── FETCH ───────────────────────────────────────────────────── */
+/* ─── FETCH ─── */
 async function fetchCSV(url){
-  const res = await fetch(url+"&cachebust="+Date.now(),{cache:"no-store"});
-  if(!res.ok) throw new Error("HTTP "+res.status);
+  const res=await fetch(url+"&cachebust="+Date.now(),{cache:"no-store"});
+  if(!res.ok)throw new Error("HTTP "+res.status);
   return parseCSV(await res.text());
 }
 
@@ -731,17 +504,13 @@ async function loadAllSheets(){
   document.getElementById("sync-text").innerHTML='<span class="spin">⟳</span> SYNCING…';
   document.getElementById("sync-text").style.color="var(--gold)";
   try{
-    const [v,l,s] = await Promise.all([
-      fetchCSV(SHEET_URLS.visitors),
-      fetchCSV(SHEET_URLS.leads),
-      fetchCSV(SHEET_URLS.sales),
-    ]);
-    RAW.visitors = transformV(v);
-    RAW.leads    = transformL(l);
-    RAW.sales    = transformS(s);
+    const [v,l,s]=await Promise.all([fetchCSV(SHEET_URLS.visitors),fetchCSV(SHEET_URLS.leads),fetchCSV(SHEET_URLS.sales)]);
+    RAW.visitors=transformV(v);
+    RAW.leads=transformL(l);
+    RAW.sales=transformS(s);
     buildMasterFilters();
     applyFilters();
-    const t = new Date().toLocaleTimeString();
+    const t=new Date().toLocaleTimeString();
     document.getElementById("sync-text").innerHTML="✓ LIVE · "+t;
     document.getElementById("sync-text").style.color="var(--green)";
   }catch(e){
@@ -751,195 +520,194 @@ async function loadAllSheets(){
   }
 }
 
-/* ─── MASTER FILTERS ──────────────────────────────────────────── */
+/* ─── FILTERS ─── */
 function buildMasterFilters(){
-  const allData = [...RAW.visitors,...RAW.leads,...RAW.sales];
-  const users  = ["All",...new Set(allData.map(r=>r.user).filter(Boolean))].sort((a,b)=>a==="All"?-1:a.localeCompare(b));
-  const types  = ["All",...new Set(allData.map(r=>r.leadType).filter(Boolean))].sort((a,b)=>a==="All"?-1:a.localeCompare(b));
-  const states = ["All",...new Set(allData.map(r=>r.state).filter(Boolean))].sort((a,b)=>a==="All"?-1:a.localeCompare(b));
-
+  const allData=[...RAW.visitors,...RAW.leads,...RAW.sales];
+  const users=["All",...new Set(allData.map(r=>r.user).filter(Boolean))].sort((a,b)=>a==="All"?-1:a.localeCompare(b));
+  const types=["All",...new Set(allData.map(r=>r.leadType).filter(Boolean))].sort((a,b)=>a==="All"?-1:a.localeCompare(b));
+  const states=["All",...new Set(allData.map(r=>r.state).filter(Boolean))].sort((a,b)=>a==="All"?-1:a.localeCompare(b));
   buildPills("user-filter","USER",users,"cyan",v=>{selUser=v;applyFilters();},()=>selUser);
   buildPills("type-filter","TYPE",types,"violet",v=>{selType=v;applyFilters();},()=>selType,13);
   buildPills("state-filter","STATE",states,"green",v=>{selState=v;applyFilters();},()=>selState,12);
 }
 
-function buildPills(containerId, label, values, colorClass, onClick, getCurrent, maxLen=99){
-  const container = document.getElementById(containerId);
-  container.innerHTML = `<span class="filter-label">${label}</span>`;
+function buildPills(containerId,label,values,colorClass,onClick,getCurrent,maxLen=99){
+  const container=document.getElementById(containerId);
+  container.innerHTML=`<span class="filter-label">${label}</span>`;
   values.forEach(v=>{
-    const btn = document.createElement("button");
-    btn.className = "pill";
-    btn.dataset.value = v;
-    btn.dataset.colorClass = colorClass;
-    btn.textContent = v==="All"?"ALL":(v.length>maxLen?v.slice(0,maxLen)+"…":v);
-    btn.title = v;
-    btn.onclick = ()=>{
+    const btn=document.createElement("button");
+    btn.className="pill";btn.dataset.value=v;btn.dataset.colorClass=colorClass;
+    btn.textContent=v==="All"?"ALL":(v.length>maxLen?v.slice(0,maxLen)+"…":v);
+    btn.title=v;
+    btn.onclick=()=>{
       onClick(v);
       container.querySelectorAll(".pill").forEach(p=>{
         p.classList.remove("active-cyan","active-violet","active-green");
-        if(p.dataset.value===getCurrent()) p.classList.add("active-"+colorClass);
+        if(p.dataset.value===getCurrent())p.classList.add("active-"+colorClass);
       });
     };
-    if(v===getCurrent()) btn.classList.add("active-"+colorClass);
+    if(v===getCurrent())btn.classList.add("active-"+colorClass);
     container.appendChild(btn);
   });
-  // Reset all button
-  const rst = document.createElement("button");
-  rst.className="btn-reset"; rst.textContent="✕";
+  const rst=document.createElement("button");
+  rst.className="btn-reset";rst.textContent="✕";
   rst.onclick=()=>{onClick("All");container.querySelectorAll(".pill").forEach(p=>{p.classList.remove("active-cyan","active-violet","active-green");if(p.dataset.value==="All")p.classList.add("active-"+colorClass);});};
   container.appendChild(rst);
 }
 
-/* ─── FILTER + RENDER ─────────────────────────────────────────── */
+/* ─── APPLY FILTERS + RENDER ─── */
 function applyFilters(){
-  const from = document.getElementById("dateFrom").value;
-  const to   = document.getElementById("dateTo").value;
-
-  // Update date label
-  const lbl = document.getElementById("date-range-label");
-  if(from||to) lbl.textContent = (from?fmtDate(from):"Start")+" → "+(to?fmtDate(to):"End");
+  const from=document.getElementById("dateFrom").value;
+  const to=document.getElementById("dateTo").value;
+  const lbl=document.getElementById("date-range-label");
+  if(from||to)lbl.textContent=(from?fmtDate(from):"Start")+" → "+(to?fmtDate(to):"End");
   else lbl.textContent="";
 
-  function inRange(d){
-    if(!from&&!to) return true;
-    const iso = toISO(d); if(!iso) return true;
-    if(from&&iso<from) return false;
-    if(to&&iso>to) return false;
-    return true;
-  }
-  function match(r){
-    return (selUser==="All"||r.user===selUser)&&
-           (selType==="All"||r.leadType===selType)&&
-           (selState==="All"||r.state===selState)&&
-           inRange(r.date);
-  }
+  function inRange(d){if(!from&&!to)return true;const iso=toISO(d);if(!iso)return true;if(from&&iso<from)return false;if(to&&iso>to)return false;return true;}
+  function match(r){return(selUser==="All"||r.user===selUser)&&(selType==="All"||r.leadType===selType)&&(selState==="All"||r.state===selState)&&inRange(r.date);}
 
-  const fV = RAW.visitors.filter(match);
-  const fL = RAW.leads.filter(match);
-  const fS = RAW.sales.filter(match);
-  const fA = [...fV.map(r=>({...r,_src:"Visit"})),...fL.map(r=>({...r,_src:"Lead"}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const fV=RAW.visitors.filter(match);
+  const fL=RAW.leads.filter(match);
+  const fS=RAW.sales.filter(match);
+  const fA=[...fV.map(r=>({...r,_src:"Visit"})),...fL.map(r=>({...r,_src:"Lead"}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
 
   updateKPIs(fV,fL,fS);
   updateCharts(fV,fL,fS);
-  renderTable("leads",   fL, ["date","source","user","customer","contact","mobile","state","leadType","stage","remarks"], ["Date","Source","User","Customer Name","Contact","Mobile","State","Lead Type","Stage","Remarks"], "#9b7fd4");
-  renderTable("sales",   fS, ["date","customer","user","leadType","amount","state","products"], ["Date","Customer","User","Lead Type","PO Amount","State","Products"], "#5cba8a");
-  renderTable("visitors",fV, ["date","leadType","user","customer","contact","state","city","competitors","remarks"], ["Date","Lead Type","User","Customer Name","Contact","State","City","Competitor","Remarks"], "#4db8d4");
-  renderTable("activity",fA, ["date","_src","leadType","user","customer","contact","state","stage","remarks"], ["Date","Type","Lead Type","User","Customer Name","Contact","State","Stage","Remarks"], "#c8973a");
+
+  // Overview tab: activity + sales summary tables
+  renderTable("activity", fA,
+    ["date","_src","leadType","user","customer","contact","state","stage","remarks"],
+    ["Date","Type","Lead Type","User","Customer Name","Contact","State","Stage","Remarks"],
+    "#c8973a");
+
+  renderTable("sales", fS,
+    ["date","customer","user","leadType","amount","state","products"],
+    ["Date","Customer","User","Lead Type","PO Amount","State","Products"],
+    "#5cba8a");
+
+  // Individual tabs — each has its own table element & pager
+  renderTable("leads", fL,
+    ["date","source","user","customer","contact","mobile","state","leadType","stage","remarks"],
+    ["Date","Source","User","Customer Name","Contact","Mobile","State","Lead Type","Stage","Remarks"],
+    "#9b7fd4");
+
+  renderTable("sales2", fS,
+    ["date","customer","user","leadType","amount","state","products"],
+    ["Date","Customer","User","Lead Type","PO Amount","State","Products"],
+    "#5cba8a");
+
+  renderTable("visitors", fV,
+    ["date","leadType","user","customer","contact","state","city","competitors","remarks"],
+    ["Date","Lead Type","User","Customer Name","Contact","State","City","Competitor","Remarks"],
+    "#4db8d4");
+
+  renderTable("activity2", fA,
+    ["date","_src","leadType","user","customer","contact","state","stage","remarks"],
+    ["Date","Type","Lead Type","User","Customer Name","Contact","State","Stage","Remarks"],
+    "#c8973a");
 }
 
-/* ─── KPIs ────────────────────────────────────────────────────── */
+/* ─── KPIs ─── */
 function updateKPIs(fV,fL,fS){
-  const rev  = fS.reduce((s,r)=>s+(r.amount||0),0);
-  const quot = fL.filter(r=>r.stage==="Quotation Send"||r.stage==="Hot Lead").length;
-  const hot  = fL.filter(r=>r.stage==="Hot Lead").length;
-  document.getElementById("kpi-visitors").textContent = fV.length;
-  document.getElementById("kpi-visitors-sub").textContent = "customer visits recorded";
-  document.getElementById("kpi-leads").textContent = fL.length;
-  document.getElementById("kpi-leads-sub").textContent = hot+" hot leads";
-  document.getElementById("kpi-sales").textContent = fS.length;
-  document.getElementById("kpi-quot").textContent = quot;
-  document.getElementById("kpi-rev").textContent = fmt(rev);
-  document.getElementById("kpi-rev-sub").textContent = "avg "+fmt(rev/(fS.length||1))+"/sale";
+  const rev=fS.reduce((s,r)=>s+(r.amount||0),0);
+  const quot=fL.filter(r=>r.stage==="Quotation Send"||r.stage==="Hot Lead").length;
+  const hot=fL.filter(r=>r.stage==="Hot Lead").length;
+  document.getElementById("kpi-visitors").textContent=fV.length;
+  document.getElementById("kpi-visitors-sub").textContent="customer visits recorded";
+  document.getElementById("kpi-leads").textContent=fL.length;
+  document.getElementById("kpi-leads-sub").textContent=hot+" hot leads";
+  document.getElementById("kpi-sales").textContent=fS.length;
+  document.getElementById("kpi-quot").textContent=quot;
+  document.getElementById("kpi-rev").textContent=fmt(rev);
+  document.getElementById("kpi-rev-sub").textContent="avg "+fmt(rev/(fS.length||1))+"/sale";
 }
 
-/* ─── CHARTS ──────────────────────────────────────────────────── */
-const chartDefaults = {
-  font:{ family:"'Outfit',sans-serif" },
-  color:"#9e8c70",
-};
-Chart.defaults.font.family = "'Outfit',sans-serif";
-Chart.defaults.color = "#9e8c70";
+/* ─── CHARTS ─── */
+Chart.defaults.font.family="'Outfit',sans-serif";
+Chart.defaults.color="#9e8c70";
+const gridColor="rgba(0,0,0,0.05)";
+const tooltipStyle={backgroundColor:"#1a1510",borderColor:"#2e2518",borderWidth:1,titleColor:"#c8973a",bodyColor:"#f0e8d8",titleFont:{weight:"bold",size:11},bodyFont:{size:11},cornerRadius:8,displayColors:true,padding:10};
 
 function grp(arr,key,top=10){const m={};arr.forEach(r=>{if(r[key])m[r[key]]=(m[r[key]]||0)+1;});return Object.entries(m).map(([k,v])=>({k,v})).sort((a,b)=>b.v-a.v).slice(0,top);}
 function grpAmt(arr,key,top=8){const m={};arr.forEach(r=>{if(r[key])m[r[key]]=(m[r[key]]||0)+(r.amount||0);});return Object.entries(m).map(([k,v])=>({k,v})).sort((a,b)=>b.v-a.v).slice(0,top);}
 
-const gridColor = "rgba(0, 0, 0, 0.05)"; // Very faint gray lines
-const tooltipStyle = {
-  backgroundColor:"#1a1510",borderColor:"#2e2518",borderWidth:1,
-  titleColor:"#c8973a",bodyColor:"#f0e8d8",
-  titleFont:{weight:"bold",size:11},bodyFont:{size:11},
-  cornerRadius:8,displayColors:true,padding:10,
-};
-
 function makeBar(id,labels,data,colors,horizontal=false){
-  if(charts[id]) charts[id].destroy();
-  const ctx = document.getElementById(id).getContext("2d");
-  charts[id] = new Chart(ctx,{
+  if(charts[id])charts[id].destroy();
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext("2d");
+  charts[id]=new Chart(ctx,{
     type:"bar",
     data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
     options:{
-      indexAxis: horizontal?"y":"x",
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{...tooltipStyle,callbacks:{label:ctx=>{const v=ctx.raw;return horizontal&&id.includes("rev")?" "+fmt(v):" "+v;}}}},
+      indexAxis:horizontal?"y":"x",responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...tooltipStyle,callbacks:{label:c=>{const v=c.raw;return horizontal&&id.includes("rev")?" "+fmt(v):" "+v;}}}},
       scales:{
         x:{grid:{color:gridColor},ticks:{color:"#9e8c70",font:{size:9},maxRotation:horizontal?0:35,callback:v=>horizontal&&id.includes("rev")?fmt(v).replace("₹",""):v}},
-        y:{grid:{color:horizontal?gridColor:"transparent"},ticks:{color:"#f0e8d8",font:{size:10}}},
+        y:{grid:{color:horizontal?gridColor:"transparent"},ticks:{color:"#374151",font:{size:10}}},
       }
     }
   });
 }
 
 function makePie(id,labels,data,colors){
-  if(charts[id]) charts[id].destroy();
-  const ctx = document.getElementById(id).getContext("2d");
-  charts[id] = new Chart(ctx,{
+  if(charts[id])charts[id].destroy();
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext("2d");
+  charts[id]=new Chart(ctx,{
     type:"doughnut",
     data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:6}]},
     options:{
       responsive:true,maintainAspectRatio:false,cutout:"45%",
-      plugins:{
-        legend:{display:true,position:"right",labels:{color:"#9e8c70",font:{size:10},padding:8,boxWidth:10}},
-        tooltip:{...tooltipStyle},
-      }
+      plugins:{legend:{display:true,position:"right",labels:{color:"#9e8c70",font:{size:10},padding:8,boxWidth:10}},tooltip:{...tooltipStyle}}
     }
   });
 }
 
 function updateCharts(fV,fL,fS){
-  const src   = grp(fL,"source",8);
-  const stage = [
+  const src=grp(fL,"source",8);
+  const stage=[
     {k:"New",v:fL.filter(r=>r.stage==="New").length,c:"#4db8d4"},
     {k:"Follow up",v:fL.filter(r=>r.stage==="Follow up").length,c:"#9b7fd4"},
     {k:"Hot Lead",v:fL.filter(r=>r.stage==="Hot Lead").length,c:"#d4884a"},
     {k:"Quot. Send",v:fL.filter(r=>r.stage==="Quotation Send").length,c:"#c8973a"},
     {k:"Pending",v:fL.filter(r=>r.stage==="Pending").length,c:"#d4697a"},
   ].filter(d=>d.v>0);
-  const stateRev = grpAmt(fS,"state");
-  const userRev  = grpAmt(fS,"user");
-  const userCnt  = grp(fS,"user");
-  const typeCnt  = grp(fS,"leadType");
-  const comp     = grp(fV,"competitors",8);
-  const visUser  = grp(fV,"user",8);
-  const stateCnt = grp(fS,"state");
+  const stateRev=grpAmt(fS,"state");
+  const userRev=grpAmt(fS,"user");
+  const userCnt=grp(fS,"user");
+  const typeCnt=grp(fS,"leadType");
+  const comp=grp(fV,"competitors",8);
+  const visUser=grp(fV,"user",8);
+  const stateCnt=grp(fS,"state");
 
-  makeBar("ch-source", src.map(d=>d.k), src.map(d=>d.v), PALETTE);
-  makePie("ch-pipeline", stage.map(d=>d.k), stage.map(d=>d.v), stage.map(d=>d.c));
-  makeBar("ch-state-rev", stateRev.map(d=>d.k), stateRev.map(d=>d.v), PALETTE, true);
-  makeBar("ch-user-rev",  userRev.map(d=>d.k),  userRev.map(d=>d.v),  PALETTE, true);
-  makeBar("ch-user-cnt",  userCnt.map(d=>d.k),  userCnt.map(d=>d.v),  PALETTE, true);
-  makeBar("ch-type-cnt",  typeCnt.map(d=>d.k),  typeCnt.map(d=>d.v),  PALETTE, true);
-  makeBar("ch-comp",      comp.map(d=>d.k),      comp.map(d=>d.v),     PALETTE);
-  makeBar("ch-vis-user",  visUser.map(d=>d.k),   visUser.map(d=>d.v),  PALETTE);
-  makeBar("ch-state-cnt", stateCnt.map(d=>d.k),  stateCnt.map(d=>d.v), PALETTE, true);
+  makeBar("ch-source",src.map(d=>d.k),src.map(d=>d.v),PALETTE);
+  makePie("ch-pipeline",stage.map(d=>d.k),stage.map(d=>d.v),stage.map(d=>d.c));
+  makeBar("ch-state-rev",stateRev.map(d=>d.k),stateRev.map(d=>d.v),PALETTE,true);
+  makeBar("ch-user-rev",userRev.map(d=>d.k),userRev.map(d=>d.v),PALETTE,true);
+  makeBar("ch-user-cnt",userCnt.map(d=>d.k),userCnt.map(d=>d.v),PALETTE,true);
+  makeBar("ch-type-cnt",typeCnt.map(d=>d.k),typeCnt.map(d=>d.v),PALETTE,true);
+  makeBar("ch-comp",comp.map(d=>d.k),comp.map(d=>d.v),PALETTE);
+  makeBar("ch-vis-user",visUser.map(d=>d.k),visUser.map(d=>d.v),PALETTE);
+  makeBar("ch-state-cnt",stateCnt.map(d=>d.k),stateCnt.map(d=>d.v),PALETTE,true);
 }
 
-/* ─── TABLES ──────────────────────────────────────────────────── */
-function renderTable(name, rows, cols, headers, color){
-  if(!sortState[name]) sortState[name]={col:"date",dir:"desc"};
-  if(!searchState[name]) searchState[name]="";
-  if(!pageState[name]) pageState[name]=0;
+/* ─── TABLES ─── */
+const STAGE_C={New:"#4db8d4","Hot Lead":"#d4884a","Quotation Send":"#c8973a","Follow up":"#9b7fd4","Pending":"#d4697a"};
 
-  // Sort
+function renderTable(name,rows,cols,headers,color){
+  if(!sortState[name])sortState[name]={col:"date",dir:"desc"};
+  if(!searchState[name])searchState[name]="";
+  if(!pageState[name])pageState[name]=0;
+
   const sorted=[...rows].sort((a,b)=>{
     let av=a[sortState[name].col]??"",bv=b[sortState[name].col]??"";
     if(sortState[name].col==="date"){av=new Date(av);bv=new Date(bv);}
-    if(sortState[name].col==="amount"){av=Number(av);bv=Number(bv);}
+    else if(sortState[name].col==="amount"){av=Number(av);bv=Number(bv);}
     if(av<bv)return sortState[name].dir==="asc"?-1:1;
     if(av>bv)return sortState[name].dir==="asc"?1:-1;
     return 0;
   });
 
-  // Filter by search
   const q=searchState[name].toLowerCase();
   const filtered=q?sorted.filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(q))):sorted;
   const pages=Math.ceil(filtered.length/PER);
@@ -947,76 +715,76 @@ function renderTable(name, rows, cols, headers, color){
   pageState[name]=pg;
   const paged=filtered.slice(pg*PER,(pg+1)*PER);
 
-  const STAGE_C={New:"#4db8d4","Hot Lead":"#d4884a","Quotation Send":"#c8973a","Follow up":"#9b7fd4","Pending":"#d4697a"};
-
-  // Header area
+  // Header
   const topEl=document.getElementById("tbl-"+name+"-top");
+  if(!topEl)return;
   topEl.innerHTML=`
     <div class="table-title" style="color:${color}">
       <span class="table-title-bar" style="background:${color}"></span>
-      ${name.charAt(0).toUpperCase()+name.slice(1)} Records
+      ${name==="activity2"?"Activity":name==="sales2"?"Sales":name.charAt(0).toUpperCase()+name.slice(1)} Records
       <span class="table-count">(${filtered.length})</span>
     </div>
-    <input class="search-input" placeholder="🔍  Search…" value="${searchState[name]}"
-      oninput="searchState['${name}']=this.value;pageState['${name}']=0;renderTable('${name}',[...arguments[0]],${JSON.stringify(cols)},${JSON.stringify(headers)},'${color}')" />
+    <input class="search-input" placeholder="🔍  Search…" value="${searchState[name]}"/>
   `;
-  // Reattach search (simpler approach)
-  topEl.querySelector("input").oninput = function(){
-    searchState[name]=this.value; pageState[name]=0;
-    applyFilters();
-  };
+  topEl.querySelector("input").oninput=function(){searchState[name]=this.value;pageState[name]=0;applyFilters();};
 
-  // Build table HTML
+  // Table
   const tbl=document.getElementById("tbl-"+name);
+  if(!tbl)return;
   let html=`<thead><tr>`;
   headers.forEach((h,i)=>{
     const sc=sortState[name];
     const arr=sc.col===cols[i]?(sc.dir==="asc"?"↑":"↓"):`<span style="opacity:.3">↕</span>`;
-    html+=`<th style="color:${color}" onclick="toggleSort('${name}','${cols[i]}',${JSON.stringify(rows)},${JSON.stringify(cols)},${JSON.stringify(headers)},'${color}')">${h} ${arr}</th>`;
+    html+=`<th style="color:${color}" data-col="${cols[i]}" data-name="${name}">${h} ${arr}</th>`;
   });
   html+=`</tr></thead><tbody>`;
   paged.forEach((row,i)=>{
-    html+=`<tr class="trow" style="background:${i%2===0?"transparent":"rgba(255,255,255,0.01)"}">`;
+    html+=`<tr class="trow" style="background:${i%2===0?"transparent":"rgba(249,250,251,0.8)"}">`;
     cols.forEach(col=>{
       let val=row[col]??"";
-      let style="color:var(--text)";
-      if(col==="date"){val=fmtDate(val);style="color:var(--sub);white-space:nowrap";}
+      let style="color:#1f2937";
+      if(col==="date"){val=fmtDate(val);style="color:#6b7280;white-space:nowrap";}
       else if(col==="amount"){val=fmt(val);style="color:#5cba8a;font-weight:600";}
-      else if(col==="stage"&&val){style=`color:${STAGE_C[val]||"var(--text)"};font-weight:600`;}
+      else if(col==="stage"&&val){style=`color:${STAGE_C[val]||"#1f2937"};font-weight:600`;}
       else if(col==="_src"){style=`color:${val==="Lead"?"#9b7fd4":"#4db8d4"};font-weight:600`;}
       else if(col==="user"){style="color:var(--gold);font-weight:500";}
       html+=`<td style="${style}" title="${String(val).replace(/"/g,"'")}">${val}</td>`;
     });
     html+=`</tr>`;
   });
-  if(paged.length===0) html+=`<tr><td colspan="${cols.length}" style="padding:24px;text-align:center;color:var(--dim);letter-spacing:.1em">No records found</td></tr>`;
+  if(paged.length===0)html+=`<tr><td colspan="${cols.length}" style="padding:24px;text-align:center;color:var(--dim);letter-spacing:.1em">No records found</td></tr>`;
   html+=`</tbody>`;
   tbl.innerHTML=html;
 
+  // Attach sort listeners
+  tbl.querySelectorAll("th[data-col]").forEach(th=>{
+    th.onclick=()=>{
+      const n=th.dataset.name,c=th.dataset.col;
+      const sc=sortState[n];
+      if(sc.col===c)sc.dir=sc.dir==="asc"?"desc":"asc";
+      else{sc.col=c;sc.dir="desc";}
+      applyFilters();
+    };
+  });
+
   // Pager
   const pgEl=document.getElementById("pg-"+name);
+  if(!pgEl)return;
   pgEl.innerHTML="";
   if(pages>1){
     const prev=document.createElement("button");
-    prev.className="btn-page"; prev.textContent="← Prev"; prev.disabled=pg===0;
+    prev.className="btn-page";prev.textContent="← Prev";prev.disabled=pg===0;
     prev.onclick=()=>{pageState[name]=pg-1;applyFilters();};
     const info=document.createElement("span");
-    info.className="page-info"; info.textContent=`Page ${pg+1} of ${pages}`;
+    info.className="page-info";info.textContent=`Page ${pg+1} of ${pages}`;
     const next=document.createElement("button");
-    next.className="btn-page"; next.textContent="Next →"; next.disabled=pg===pages-1;
+    next.className="btn-page";next.textContent="Next →";next.disabled=pg===pages-1;
     next.onclick=()=>{pageState[name]=pg+1;applyFilters();};
-    pgEl.appendChild(prev); pgEl.appendChild(info); pgEl.appendChild(next);
+    pgEl.appendChild(prev);pgEl.appendChild(info);pgEl.appendChild(next);
   }
 }
 
-function toggleSort(name,col,rows,cols,headers,color){
-  const sc=sortState[name];
-  if(sc.col===col) sc.dir=sc.dir==="asc"?"desc":"asc";
-  else{sc.col=col;sc.dir="desc";}
-  applyFilters();
-}
-
-/* ─── TAB SWITCHING ───────────────────────────────────────────── */
+/* ─── TAB SWITCHING ─── */
 function switchTab(name){
   document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
@@ -1024,17 +792,10 @@ function switchTab(name){
   document.getElementById("tab-"+name).classList.add("active");
 }
 
-/* ─── INIT ────────────────────────────────────────────────────── */
-// Stagger KPI card animations
-document.querySelectorAll(".kpi-card").forEach((c,i)=>{
-  c.style.animationDelay=(i*70)+"ms";
-});
-
-// Load data
+/* ─── INIT ─── */
+document.querySelectorAll(".kpi-card").forEach((c,i)=>{c.style.animationDelay=(i*70)+"ms";});
 loadAllSheets();
-
-// Auto-refresh every 5 minutes
-setInterval(loadAllSheets, 300000);
+setInterval(loadAllSheets,300000);
 </script>
 </body>
 </html>
