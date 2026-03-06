@@ -356,10 +356,6 @@ footer{text-align:center;padding:16px 24px;border-top:1px solid var(--border);co
         <div class="chart-wrap"><canvas id="ch-type-cnt"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title"><span class="chart-title-bar"></span>Competitors (Visit)</div>
-        <div class="chart-wrap"><canvas id="ch-comp"></canvas></div>
-      </div>
-      <div class="chart-card">
         <div class="chart-title"><span class="chart-title-bar"></span>Visitors by User</div>
         <div class="chart-wrap"><canvas id="ch-vis-user"></canvas></div>
       </div>
@@ -661,7 +657,11 @@ function makeBar(id,labels,data,colors,horizontal=false){
         x:{
           grid:{color:gridColor},
           ticks:{color:"#9e8c70",font:{size:9},maxRotation:horizontal?0:35,
-            callback:v=>horizontal&&isRev?fmt(v).replace("₹",""):v},
+            callback:function(val){
+              if(horizontal&&isRev)return fmt(this.getLabelForValue(val)).replace("₹","");
+              return this.getLabelForValue(val);
+            }
+          },
         },
         y:{
           grid:{color:horizontal?gridColor:"transparent"},
@@ -682,16 +682,21 @@ function makePie(id,labels,data,colors){
     data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:"#ffffff",hoverOffset:6}]},
     options:{
       responsive:true,maintainAspectRatio:false,cutout:"42%",
+      layout:{padding:{top:10,bottom:10,left:10,right:10}},
       plugins:{
         legend:{display:true,position:"right",labels:{color:"#374151",font:{size:10},padding:8,boxWidth:10}},
         tooltip:{...tooltipStyle,callbacks:{label:c=>`${c.label}: ${c.raw} (${Math.round(c.raw/total*100)}%)`}},
         datalabels:{
-          display:(ctx)=>ctx.dataset.data[ctx.dataIndex]>0,
+          display:(ctx)=>ctx.dataset.data[ctx.dataIndex]>=1,
           color:"#ffffff",
           font:{size:11,weight:"700",family:"'Outfit',sans-serif"},
-          formatter:(v)=>v>0?v:"",
-          textShadowBlur:4,
-          textShadowColor:"rgba(0,0,0,0.4)",
+          formatter:(v,ctx)=>{
+            const pct=Math.round(v/total*100);
+            return pct>=5?`${v}\n(${pct}%)`:"";
+          },
+          textAlign:"center",
+          textShadowBlur:6,
+          textShadowColor:"rgba(0,0,0,0.5)",
         }
       }
     }
@@ -711,7 +716,6 @@ function updateCharts(fV,fL,fS){
   const userRev=grpAmt(fS,"user");
   const userCnt=grp(fS,"user");
   const typeCnt=grp(fS,"leadType");
-  const comp=grp(fV,"competitors",8);
   const visUser=grp(fV,"user",8);
   const stateCnt=grp(fS,"state");
 
@@ -721,7 +725,6 @@ function updateCharts(fV,fL,fS){
   makeBar("ch-user-rev",userRev.map(d=>d.k),userRev.map(d=>d.v),PALETTE,true);
   makeBar("ch-user-cnt",userCnt.map(d=>d.k),userCnt.map(d=>d.v),PALETTE,true);
   makeBar("ch-type-cnt",typeCnt.map(d=>d.k),typeCnt.map(d=>d.v),PALETTE,true);
-  makeBar("ch-comp",comp.map(d=>d.k),comp.map(d=>d.v),PALETTE);
   makeBar("ch-vis-user",visUser.map(d=>d.k),visUser.map(d=>d.v),PALETTE);
   makeBar("ch-state-cnt",stateCnt.map(d=>d.k),stateCnt.map(d=>d.v),PALETTE,true);
 }
