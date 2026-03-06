@@ -19,9 +19,9 @@ import { useSheetTab, transformVisitors, transformLeads, transformSales } from "
    ══════════════════════════════════════════════════════════════════ */
 
 const SHEET_URLS = {
-  visitors: import.meta.env.VITE_SHEET_VISITORS || "",
-  leads:    import.meta.env.VITE_SHEET_LEADS    || "",
-  sales:    import.meta.env.VITE_SHEET_SALES    || "",
+  visitors: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=0&single=true&output=csv",
+  leads:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=2066525621&single=true&output=csv",
+  sales:    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJKBgkAtx6Fm5B4-mbaWwJ8lTdMMgsYo2zuXM9rEmoIQ_AlEqd6GudLDaIoAViA5OE1ppjqmujNOAj/pub?gid=23552387&single=true&output=csv",
 };
 
 /* ── FALLBACK STATIC DATA (used when sheets not configured) ───────
