@@ -78,13 +78,13 @@ header {
   ║         object-fit:contain;">                                ║
   ╚══════════════════════════════════════════════════════════════╝
 */
-#logo-slot{
-  width:46px; height:46px; flex-shrink:0;
-  border-radius:10px;
-  background:#111;
-  border:1px solid var(--border2);
-  display:flex; align-items:center; justify-content:center;
-  overflow:hidden;
+#logo-slot {
+  width: 46px; height: 46px; flex-shrink: 0;
+  border-radius: 10px;
+  background: #f8f9fa; /* Very light gray/white background */
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
 
 .brand-divider{
@@ -135,12 +135,14 @@ header {
 }
 
 /* ─── FILTER BAR ────────────────────────────────────────────────────── */
-#filter-bar{
-  background:linear-gradient(180deg,#181410,#131008);
-  border-bottom:1px solid var(--border);
-  padding:10px 24px;
-  display:flex; flex-direction:column; gap:8px;
-  box-shadow:0 2px 16px rgba(0,0,0,.5);
+#filter-bar {
+  background: var(--surface); /* Uses your e6d5b0 surface color */
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: none; /* Removes the heavy dark shadow */
 }
 .filter-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
 .filter-label{
