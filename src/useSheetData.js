@@ -1,58 +1,89 @@
-// useSheetData.js
-// Fetches data from a public Google Sheet (CSV export)
-// To use: File > Share > Publish to web > CSV
+// useSheetData.js — NIC Dashboard Google Sheets integration
+// Column names confirmed from Power BI data model:
+//   Visitor_Related_data:  Date, Lead Type, User, Customer Name, Contact Person,
+//                          State, City, Mayer Existing Customer, Remark, Competitors
+//   Lead_Realated_Data:    Date, Source, User, Customer Name, Contact Person,
+//                          Mobile, Remark, State, Lead Type, Stage, GST NO., Last Follow Date
+//   Sales_Related_Data:    Date, Customer, User, Lead Type, PO Amount, State, GST, Products
 
 import { useState, useEffect, useCallback } from "react";
 
-/**
- * Parses CSV text into array of objects using first row as headers
- */
+/** Robust CSV parser — handles quoted fields, commas inside quotes, CRLF */
 function parseCSV(text) {
-  const lines = text.trim().split("\n");
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
-  return lines.slice(1).map(line => {
-    // Handle quoted fields with commas inside
-    const vals = [];
-    let cur = "", inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      if (line[i] === '"') { inQ = !inQ; continue; }
-      if (line[i] === "," && !inQ) { vals.push(cur.trim()); cur = ""; continue; }
-      cur += line[i];
+  const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+  if (!normalized) return [];
+
+  let i = 0;
+  const results = [];
+
+  function parseField() {
+    if (normalized[i] === '"') {
+      i++;
+      let val = "";
+      while (i < normalized.length) {
+        if (normalized[i] === '"') {
+          if (normalized[i + 1] === '"') { val += '"'; i += 2; }
+          else { i++; break; }
+        } else { val += normalized[i++]; }
+      }
+      return val.trim();
     }
-    vals.push(cur.trim());
+    let val = "";
+    while (i < normalized.length && normalized[i] !== "," && normalized[i] !== "\n") {
+      val += normalized[i++];
+    }
+    return val.trim();
+  }
+
+  function parseRow() {
+    const row = [];
+    while (i < normalized.length && normalized[i] !== "\n") {
+      row.push(parseField());
+      if (i < normalized.length && normalized[i] === ",") i++;
+    }
+    if (i < normalized.length && normalized[i] === "\n") i++;
+    return row;
+  }
+
+  const headers = parseRow().map(h => h.trim());
+  if (!headers.length) return [];
+
+  while (i < normalized.length) {
+    const vals = parseRow();
+    if (vals.every(v => v === "")) continue;
     const obj = {};
-    headers.forEach((h, i) => { obj[h] = vals[i] ?? ""; });
-    return obj;
-  });
+    headers.forEach((h, idx) => { obj[h] = vals[idx] ?? ""; });
+    results.push(obj);
+  }
+  return results;
 }
 
-/**
- * Hook: fetches one sheet tab from published Google Sheet CSV URL
- * @param {string} url  - Published CSV URL for this tab
- * @param {number} refreshMs - Auto-refresh interval (default 5 min)
- */
+/** Hook: fetch + auto-refresh a published Google Sheet tab as CSV */
 export function useSheetTab(url, refreshMs = 300000) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [data, setData]               = useState([]);
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchData = useCallback(async () => {
     if (!url) return;
     try {
       setLoading(true);
-      // Google Sheets published CSV — append cache-buster
-      const fetchUrl = `${url}&cachebust=${Date.now()}`;
-      const res = await fetch(fetchUrl, { cache: "no-store" });
+      setError(null);
+      const res = await fetch(`${url}&cachebust=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
       const parsed = parseCSV(text);
+      // Debug: log exact columns to browser console
+      if (parsed.length > 0) {
+        console.log("📊 Sheet columns:", Object.keys(parsed[0]));
+        console.log("📊 Row 1 sample:", parsed[0]);
+      }
       setData(parsed);
       setLastUpdated(new Date());
-      setError(null);
     } catch (e) {
       setError(e.message);
+      console.error("Sheet fetch error:", e);
     } finally {
       setLoading(false);
     }
@@ -69,63 +100,64 @@ export function useSheetTab(url, refreshMs = 300000) {
   return { data, loading, error, lastUpdated, refetch: fetchData };
 }
 
-/**
- * Helper: pick first non-empty value from multiple possible keys
- */
+/** Pick first truthy value from multiple column name variants */
 function pick(row, ...keys) {
   for (const k of keys) {
-    if (row[k] !== undefined && row[k] !== "") return row[k];
+    const v = row[k];
+    if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
   }
   return "";
 }
 
-/**
- * Transforms raw sheet rows into VISITORS format
- * Handles both your Google Sheet column names AND the old hardcoded names
- */
+/** Strip ₹ and commas, parse as number */
+function toNum(val) {
+  if (!val) return 0;
+  return parseFloat(String(val).replace(/[₹,\s]/g, "")) || 0;
+}
+
+/* ── TRANSFORMS: exact Power BI column names ── */
+
 export function transformVisitors(rows) {
   return rows.map(r => ({
-    date:     pick(r, "Date", "date"),
-    leadType: pick(r, "Lead Type", "leadType", "lead_type"),
-    user:     pick(r, "User", "user"),
-    customer: pick(r, "Customer Name", "customer", "Customer"),
-    contact:  pick(r, "Contact Person", "contact", "Contact"),
-    state:    pick(r, "State", "state"),
-    city:     pick(r, "CIty", "City", "city"),
-    existing: pick(r, "Meyer Existing Customer", "existing", "Existing"),
-    remarks:  pick(r, "Remarks", "remarks"),
-  })).filter(r => r.date);
+    date:        pick(r, "Date"),
+    leadType:    pick(r, "Lead Type"),
+    user:        pick(r, "User"),
+    customer:    pick(r, "Customer Name"),
+    contact:     pick(r, "Contact Person"),
+    state:       pick(r, "State"),
+    city:        pick(r, "City", "CIty"),
+    competitors: pick(r, "Competitors", "Mayer Existing Customer"),
+    remarks:     pick(r, "Remark", "Remarks"),
+  })).filter(r => r.date && r.date !== "Date");
 }
 
-/**
- * Transforms raw sheet rows into LEADS format
- */
 export function transformLeads(rows) {
   return rows.map(r => ({
-    date:     pick(r, "Date", "date"),
-    uqn:      pick(r, "UQN", "uqn"),
-    source:   pick(r, "Source", "source", "Lead Source"),
-    user:     pick(r, "User", "user"),
-    customer: pick(r, "Customer Name", "customer", "Customer"),
-    contact:  pick(r, "Contact Person", "contact", "Contact"),
-    mobile:   pick(r, "Mobile", "mobile", "Phone"),
-    remarks:  pick(r, "Remarks", "remarks"),
-    state:    pick(r, "State", "state"),
-    leadType: pick(r, "Lead Type", "leadType", "lead_type"),
-    stage:    pick(r, "Stage", "stage", "Lead Stage"),
-  })).filter(r => r.date);
+    date:        pick(r, "Date"),
+    uqn:         pick(r, "GST NO.", "UQN"),
+    source:      pick(r, "Source"),
+    user:        pick(r, "User"),
+    customer:    pick(r, "Customer Name"),
+    contact:     pick(r, "Contact Person"),
+    mobile:      pick(r, "Mobile"),
+    remarks:     pick(r, "Remark", "Remarks"),
+    state:       pick(r, "State"),
+    leadType:    pick(r, "Lead Type"),
+    stage:       pick(r, "Stage"),
+    lastFollow:  pick(r, "Last Follow Date"),
+  })).filter(r => r.date && r.date !== "Date");
 }
 
-/**
- * Transforms raw sheet rows into SALES format
- */
 export function transformSales(rows) {
+  if (rows.length > 0) console.log("💰 SALES cols:", Object.keys(rows[0]));
   return rows.map(r => ({
-    date:     pick(r, "Date", "date"),
-    customer: pick(r, "Customer Name", "customer", "Customer"),
-    user:     pick(r, "User", "user"),
-    leadType: pick(r, "Lead Type", "leadType", "lead_type"),
-    amount:   parseFloat(pick(r, "Amount", "amount", "Sale Amount", "Revenue") || "0") || 0,
-    state:    pick(r, "State", "state"),
-  })).filter(r => r.date);
+    date:     pick(r, "Date"),
+    customer: pick(r, "Customer"),
+    user:     pick(r, "User"),
+    leadType: pick(r, "Lead Type"),
+    amount:   toNum(pick(r, "PO Amount", "Amount", "Sale Amount", "Order Value", "Value", "Revenue")),
+    state:    pick(r, "State"),
+    products: pick(r, "Products"),
+    gst:      pick(r, "GST"),
+  })).filter(r => r.date && r.date !== "Date");
 }
